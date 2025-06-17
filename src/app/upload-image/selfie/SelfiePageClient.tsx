@@ -69,9 +69,8 @@ export default function SelfiePageClient() {
       returnTo: '/report',
     }).toString();
 
-    router.push(`/loading?${redirectParams}`);
-
     try {
+      // First, get the Gemini analysis
       const promptRes = await fetch('/api/generate-prompt', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -91,36 +90,34 @@ export default function SelfiePageClient() {
       const { result } = await promptRes.json();
       console.log('🧠 Gemini Result:', result);
 
+      // Store the Gemini result first
+      localStorage.setItem('reportResult', result);
+
+      // Navigate to report page immediately
+      router.push(`/report?${redirectParams}`);
+
+      // Then generate the DALL·E image in the background
       const match = result.match(/\*\*Image Prompt:\*\*\s*(.+)/);
       const imagePrompt = match?.[1]?.trim();
 
-      if (!imagePrompt || imagePrompt.length < 10) {
-        router.push('/error?message=Could not generate style prompt. Please try again.');
-        return;
+      if (imagePrompt && imagePrompt.length >= 10) {
+        const imageGenRes = await fetch('/api/generate-and-upload-image', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ imagePrompt }),
+        });
+
+        if (imageGenRes.ok) {
+          const { imageUrl } = await imageGenRes.json();
+          console.log('🖼️ Cloudinary Image URL:', imageUrl);
+          localStorage.setItem('generatedImageUrl', imageUrl);
+        }
       }
-
-      const imageGenRes = await fetch('/api/generate-and-upload-image', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ imagePrompt }),
-      });
-
-      if (!imageGenRes.ok) {
-        const errorText = await imageGenRes.text();
-        throw new Error(`Image generation/upload failed: ${errorText}`);
-      }
-
-      const { imageUrl } = await imageGenRes.json();
-      console.log('🖼️ Cloudinary Image URL:', imageUrl);
-
-      localStorage.setItem('reportResult', result);
-      localStorage.setItem('generatedImageUrl', imageUrl);
-
-      router.push('/report');
-    } catch (err) {
-      console.error('❌ handleContinue error:', err);
+    } catch (error) {
+      console.error('Error:', error);
+      router.push('/error?message=An error occurred. Please try again.');
+    } finally {
       setLoading(false);
-      router.push(`/error?message=${(err as Error).message || 'Unknown error'}`);
     }
   };
 

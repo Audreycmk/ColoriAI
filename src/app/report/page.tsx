@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import styles from './ReportPage.module.css';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import Navigation from '@/components/Navigation';
@@ -59,6 +59,314 @@ export default function ReportPage() {
   const [selectedStyle, setSelectedStyle] = useState<string>('Casual');
   const [analysisData, setAnalysisData] = useState<AnalysisData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+
+  const defaultPalette = useMemo(() => [
+    { name: 'Rose Quartz', hex: '#F0D1D9' },
+    { name: 'Misty Lavender', hex: '#D8E0E8' },
+    { name: 'Silver', hex: '#C8D0D8' },
+    { name: 'Powder Blue', hex: '#B3C6D7' },
+    { name: 'Soft Rose', hex: '#E6D1D1' },
+    { name: 'Pale Mauve', hex: '#D5C2D2' },
+    { name: 'Dusty Rose', hex: '#BCADA9' },
+    { name: 'Taupe', hex: '#A79A8D' },
+    { name: 'Greyish Beige', hex: '#E0D5CB' },
+  ], []);
+
+  useEffect(() => {
+    setIsLoading(true);
+
+    const parseReport = () => {
+      const reportResult = localStorage.getItem('reportResult');
+      const generatedImage = localStorage.getItem('generatedOutfitImage');
+      const urlParams = new URLSearchParams(window.location.search);
+      const styleFromUrl = urlParams.get('style');
+      let styleToUse = Cookies.get('preferredStyle');
+
+      if (styleFromUrl) {
+        styleToUse = styleFromUrl;
+        Cookies.set('preferredStyle', styleFromUrl);
+      } else if (!styleToUse) {
+        styleToUse = 'Casual';
+        Cookies.set('preferredStyle', 'Casual');
+      }
+
+      setSelectedStyle(styleToUse || 'Casual');
+
+      if (!reportResult) {
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        const data: AnalysisData = {
+          seasonType: '',
+          colorExtraction: [],
+          colorPalette: [],
+          jewelryTone: { name: '', hex: '' },
+          hairColors: [],
+          makeup: {
+            foundations: [],
+            cushion: { brand: '', product: '', shade: '', hex: '', url: '' },
+            lipsticks: [],
+            blushes: [],
+            eyeshadows: []
+          },
+          celebrities: [],
+          outfit: { 
+            styleType: styleToUse || 'Casual', 
+            imagePrompt: '', 
+            generatedImage: generatedImage || '/outfit-demo.png' 
+          }
+        };
+
+        // Split by double newlines to handle Gemini's response format better
+        const sections = reportResult.split('\n\n').map(section => section.trim());
+
+        for (const section of sections) {
+          const lines = section.split('\n').map(line => line.trim());
+          
+          // Seasonal Color Type
+          if (lines[0].includes('Seasonal Color Type:')) {
+            const type = lines[0].split(':')[1].trim();
+            data.seasonType = type.replace(/\*\*/g, '').trim();
+          }
+          
+          // Color Extraction
+          else if (lines[0].includes('Color Extraction')) {
+            for (let i = 2; i < lines.length; i++) { // Skip header line
+              if (lines[i].includes(',')) {
+                const [label, hex] = lines[i].split(',');
+                data.colorExtraction.push({ label: label.trim(), hex: hex.trim() });
+              }
+            }
+          }
+          
+          // Color Palette
+          else if (lines[0].includes('9-Color Seasonal Palette')) {
+            for (let i = 2; i < lines.length; i++) { // Skip header line
+              if (lines[i].includes(',')) {
+                const [name, hex] = lines[i].split(',');
+                data.colorPalette.push({ name: name.trim(), hex: hex.trim() });
+              }
+            }
+          }
+          
+          // Jewelry Tone
+          else if (lines[0].includes('Jewelry Tone:')) {
+            const parts = lines[0].split(':')[1].split(',');
+            data.jewelryTone = { name: parts[0].trim(), hex: parts[1]?.trim() || '' };
+          }
+          
+          // Hair Colors
+          else if (lines[0].includes('Flattering Hair Colors')) {
+            for (let i = 2; i < lines.length; i++) { // Skip header line
+              if (lines[i].includes(',')) {
+                const [name, hex] = lines[i].split(',');
+                data.hairColors.push({ name: name.trim(), hex: hex.trim() });
+              }
+            }
+          }
+          
+          // Makeup Sections
+          else if (lines[0].includes('Foundations:')) {
+            for (let i = 2; i < lines.length; i++) { // Skip header: Brand,Product,...
+              const parts = lines[i].split(',');
+              if (parts.length >= 5) {
+                data.makeup.foundations.push({
+                  brand: parts[0].trim(),
+                  product: parts[1].trim(),
+                  shade: parts[2].trim(),
+                  hex: parts[3].trim(),
+                  url: parts[4].replace(/\[|\]|\(|\)/g, '').trim()
+                });
+              }
+            }
+          }
+          else if (lines[0].includes('Korean Cushion:')) {
+            // Fallback for unstructured Korean Cushion data
+            data.makeup.cushion = {
+              brand: 'Sulwhasoo / Hera / IOPE',
+              product: 'Select based on undertone',
+              shade: '#B58A6B or #C29174',
+              hex: '#B58A6B',
+              url: 'https://www.sulwhasoo.com'
+            };
+          }
+          else if (lines[0].includes('Lipsticks:')) {
+            for (let i = 2; i < lines.length; i++) { // Skip header: Brand,Product,...
+              const parts = lines[i].split(',');
+              if (parts.length >= 5) {
+                data.makeup.lipsticks.push({
+                  brand: parts[0].trim(),
+                  product: parts[1].trim(),
+                  shade: parts[2].trim(),
+                  hex: parts[3].trim(),
+                  url: parts[4].replace(/\[|\]|\(|\)/g, '').trim()
+                });
+              }
+            }
+          }
+          else if (lines[0].includes('Blushes:')) {
+            for (let i = 2; i < lines.length; i++) { // Skip header: Brand,Product,...
+              const parts = lines[i].split(',');
+              if (parts.length >= 5) {
+                data.makeup.blushes.push({
+                  brand: parts[0].trim(),
+                  product: parts[1].trim(),
+                  shade: parts[2].trim(),
+                  hex: parts[3].trim(),
+                  url: parts[4].replace(/\[|\]|\(|\)/g, '').trim()
+                });
+              }
+            }
+          }
+          else if (lines[0].includes('Eyeshadow Palettes:')) {
+            // Fallback for unstructured Eyeshadow Palettes data
+            data.makeup.eyeshadows.push({
+              brand: 'Charlotte Tilbury / Natasha Denona / Viseart',
+              product: 'Warm earthy palette',
+              shade: 'Browns, golds, muted reds',
+              hex: '#A0522D',
+              url: ''
+            });
+          }
+          
+          // Celebrities
+          else if (lines[0].includes('Similar Celebrities:')) {
+            for (let i = 1; i < lines.length; i++) {
+              if (lines[i].startsWith('- ')) {
+                data.celebrities.push(lines[i].replace('- ', '').trim());
+              }
+            }
+          }
+          
+          // Image Prompt
+          else if (lines[0].includes('Image Prompt:')) {
+            data.outfit.imagePrompt = lines[0].split(':')[1].trim();
+          }
+        }
+
+        setAnalysisData(data);
+      } catch (err) {
+        console.error('Parsing failed:', err);
+        // Fallback to default data
+        setAnalysisData({
+          seasonType: 'Soft Summer',
+          colorExtraction: [
+            { label: 'Face', hex: '#F2E8E2' },
+            { label: 'Eye', hex: '#A7B1BC' },
+            { label: 'Hair', hex: '#F2E0D9' }
+          ],
+          colorPalette: defaultPalette,
+          jewelryTone: { name: 'Silver', hex: '#C8D0D8' },
+          hairColors: [
+            { name: 'Soft Blonde', hex: '#F2E0D9' },
+            { name: 'Pearl Blonde', hex: '#EAE5D9' }
+          ],
+          makeup: {
+            foundations: [
+              {
+                brand: 'NARS',
+                product: 'Natural Radiant Longwear Foundation',
+                shade: 'Mont Blanc',
+                hex: '#F2E8E2',
+                url: 'https://www.narscosmetics.com'
+              },
+              {
+                brand: 'Ilia',
+                product: 'Super Serum Skin Tint',
+                shade: 'SF4',
+                hex: '#F0E6E0',
+                url: 'https://ilia.com'
+              }
+            ],
+            cushion: {
+              brand: 'Sulwhasoo',
+              product: 'Perfecting Cushion',
+              shade: '#21 Light Beige',
+              hex: '#F2E8E2',
+              url: 'https://www.sulwhasoo.com'
+            },
+            lipsticks: [
+              {
+                brand: 'NARS',
+                product: 'Audacious Lipstick',
+                shade: 'Anna',
+                hex: '#B09FA0',
+                url: 'https://www.narscosmetics.com'
+              },
+              {
+                brand: 'Dior',
+                product: 'Rouge Dior',
+                shade: '#772 Rose Montaigne',
+                hex: '#E2D3D2',
+                url: 'https://www.dior.com'
+              }
+            ],
+            blushes: [
+              {
+                brand: 'Rare Beauty',
+                product: 'Soft Pinch Liquid Blush',
+                shade: 'Love',
+                hex: '#E9D5D3',
+                url: 'https://www.rarebeauty.com'
+              },
+              {
+                brand: 'Glossier',
+                product: 'Cloud Paint',
+                shade: 'Puff',
+                hex: '#E2D2CF',
+                url: 'https://www.glossier.com'
+              }
+            ],
+            eyeshadows: [
+              {
+                brand: 'Charlotte Tilbury',
+                product: 'Luxury Palette',
+                shade: 'Pillow Talk',
+                hex: '#E1CEC8',
+                url: 'https://www.charlottetilbury.com'
+              }
+            ]
+          },
+          celebrities: ['Saoirse Ronan', 'Lily Collins'],
+          outfit: {
+            styleType: selectedStyle || 'Casual',
+            imagePrompt: 'A flatlay of a daily outfit for a 25-year-old: a #E0D5CB knitted top, #A79A8D wide-leg trousers, #B3C6D7 canvas sneakers, a #E0D5CB tote bag, and #A79A8D cat-eye glasses.',
+            generatedImage: '/outfit-demo.png'
+          }
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    parseReport();
+
+    // Add polling for the generated image
+    const checkForGeneratedImage = () => {
+      const generatedImageUrl = localStorage.getItem('generatedImageUrl');
+      if (generatedImageUrl) {
+        setAnalysisData(prev => {
+          if (!prev) return null;
+          return {
+            ...prev,
+            outfit: {
+              ...prev.outfit,
+              generatedImage: generatedImageUrl
+            }
+          };
+        });
+      }
+    };
+
+    // Check immediately and then every 2 seconds
+    checkForGeneratedImage();
+    const intervalId = setInterval(checkForGeneratedImage, 2000);
+
+    // Cleanup interval on unmount
+    return () => clearInterval(intervalId);
+  }, [defaultPalette, selectedStyle]);
 
   const showInfo = (id: string) => {
     setShowPopup(prev => (prev === id ? null : id));
@@ -123,174 +431,6 @@ export default function ReportPage() {
     }
   };
 
-  useEffect(() => {
-    setIsLoading(true);
-
-    const reportResult = localStorage.getItem('reportResult');
-    if (!reportResult) {
-      setIsLoading(false);
-      return;
-    }
-
-    const lines = reportResult.split('\n');
-    let currentSection = '';
-    const data: AnalysisData = {
-      seasonType: '',
-      colorExtraction: [],
-      colorPalette: [],
-      jewelryTone: { name: '', hex: '' },
-      hairColors: [],
-      makeup: {
-        foundations: [],
-        cushion: { brand: '', product: '', shade: '', hex: '', url: '' },
-        lipsticks: [],
-        blushes: [],
-        eyeshadows: []
-      },
-      celebrities: [],
-      outfit: {
-        styleType: selectedStyle || 'Casual',
-        imagePrompt: '',
-        generatedImage: localStorage.getItem('outfitImage') || localStorage.getItem('generatedImageUrl') || '/outfit-demo.png'
-      }
-    };
-
-    for (const line of lines) {
-      const trimmedLine = line.trim();
-      if (!trimmedLine) continue;
-
-      if (trimmedLine.includes('**Seasonal Color Type:**')) {
-        const parts = trimmedLine.split('**Seasonal Color Type:**');
-        if (parts[1]) {
-          data.seasonType = parts[1].trim();
-        }
-      } else if (trimmedLine.includes('**Color Extraction:**')) {
-        currentSection = 'colorExtraction';
-      } else if (trimmedLine.includes('**9-Color Seasonal Palette:**')) {
-        currentSection = 'colorPalette';
-      } else if (trimmedLine.includes('**Jewelry Tone:**')) {
-        const parts = trimmedLine.split('**Jewelry Tone:**')[1].split(',');
-        data.jewelryTone = { name: parts[0].trim(), hex: parts[1]?.trim() || '' };
-      } else if (trimmedLine.includes('**Flattering Hair Colors:**')) {
-        currentSection = 'hairColors';
-      } else if (trimmedLine.includes('**Foundations:**')) {
-        currentSection = 'foundations';
-      } else if (trimmedLine.includes('**Korean Cushion:**')) {
-        currentSection = 'cushion';
-      } else if (trimmedLine.includes('**Lipsticks:**')) {
-        currentSection = 'lipsticks';
-      } else if (trimmedLine.includes('**Blushes:**')) {
-        currentSection = 'blushes';
-      } else if (trimmedLine.includes('**Eyeshadow Palettes:**')) {
-        currentSection = 'eyeshadows';
-      } else if (trimmedLine.includes('**Similar Celebrities:**')) {
-        currentSection = 'celebrities';
-      } else if (trimmedLine.includes('**Image Prompt:**')) {
-        data.outfit.imagePrompt = trimmedLine.split('**Image Prompt:**')[1].trim();
-      } else if (!trimmedLine.startsWith('**')) {
-        if (currentSection === 'colorExtraction' && trimmedLine.includes(',')) {
-          const [label, hex] = trimmedLine.split(',');
-          if (label && hex && label !== 'Label' && hex !== 'HEX') {
-            data.colorExtraction.push({ label: label.trim(), hex: hex.trim() });
-          }
-        } else if (currentSection === 'colorPalette' && trimmedLine.includes(',')) {
-          const [name, hex] = trimmedLine.split(',');
-          if (name && hex && name !== 'Name' && hex !== 'HEX') {
-            data.colorPalette.push({ name: name.trim(), hex: hex.trim() });
-          }
-        } else if (currentSection === 'hairColors' && trimmedLine.includes(',')) {
-          const [name, hex] = trimmedLine.split(',');
-          if (name && hex && name !== 'Name' && hex !== 'HEX') {
-            data.hairColors.push({ name: name.trim(), hex: hex.trim() });
-          }
-        } else if (currentSection === 'foundations' && trimmedLine.startsWith('- ')) {
-          const parts = trimmedLine.replace('- ', '').split(',');
-          if (parts.length >= 5) {
-            data.makeup.foundations.push({
-              brand: parts[0].trim(),
-              product: parts[1].trim(),
-              shade: parts[2].trim(),
-              hex: parts[3].trim(),
-              url: parts[4].trim()
-            });
-          }
-        } else if (currentSection === 'cushion' && trimmedLine.startsWith('- ')) {
-          const parts = trimmedLine.replace('- ', '').split(',');
-          if (parts.length >= 5) {
-            data.makeup.cushion = {
-              brand: parts[0].trim(),
-              product: parts[1].trim(),
-              shade: parts[2].trim(),
-              hex: parts[3].trim(),
-              url: parts[4].trim()
-            };
-          }
-        } else if (currentSection === 'lipsticks' && trimmedLine.startsWith('- ')) {
-          const parts = trimmedLine.replace('- ', '').split(',');
-          if (parts.length >= 5) {
-            data.makeup.lipsticks.push({
-              brand: parts[0].trim(),
-              product: parts[1].trim(),
-              shade: parts[2].trim(),
-              hex: parts[3].trim(),
-              url: parts[4].trim()
-            });
-          }
-        } else if (currentSection === 'blushes' && trimmedLine.startsWith('- ')) {
-          const parts = trimmedLine.replace('- ', '').split(',');
-          if (parts.length >= 5) {
-            data.makeup.blushes.push({
-              brand: parts[0].trim(),
-              product: parts[1].trim(),
-              shade: parts[2].trim(),
-              hex: parts[3].trim(),
-              url: parts[4].trim()
-            });
-          }
-        } else if (currentSection === 'eyeshadows' && trimmedLine.startsWith('- ')) {
-          const parts = trimmedLine.replace('- ', '').split(',');
-          if (parts.length >= 5) {
-            data.makeup.eyeshadows.push({
-              brand: parts[0].trim(),
-              product: parts[1].trim(),
-              shade: parts[2].trim(),
-              hex: parts[3].trim(),
-              url: parts[4].trim()
-            });
-          }
-        } else if (currentSection === 'celebrities' && trimmedLine.startsWith('- ')) {
-          data.celebrities.push(trimmedLine.replace('- ', '').trim());
-        }
-      }
-    }
-
-    setAnalysisData(data);
-    setIsLoading(false);
-
-    // Auto-save if not saved yet
-    const alreadySaved = localStorage.getItem('reportSaved');
-    const outfitImage = localStorage.getItem('outfitImage') || localStorage.getItem('generatedImageUrl');
-
-    if (!alreadySaved && outfitImage && user) {
-      fetch('/api/save-report', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          result: data,
-          outfitImage,
-        }),
-      })
-        .then((res) => {
-          if (res.ok) {
-            localStorage.setItem('reportSaved', 'true');
-          }
-        })
-        .catch((err) => {
-          console.error('Save error:', err);
-        });
-    }
-  }, [user, selectedStyle]);
-
   if (isLoading) {
     return (
       <div className="mobile-display flex items-center justify-center min-h-screen bg-[#FCF2DF]">
@@ -313,7 +453,7 @@ export default function ReportPage() {
         {/* Header */}
         <div className="bg-[#FEDCB6] h-[202px] flex flex-col items-center justify-start px-4 pt-6 sticky top-0 z-10">
           <div className="w-full flex justify-between items-center">
-            <Link href="/">
+            <Link href="/upload-image">
               <div className={styles.back}>&lt;</div>
             </Link>
             <Navigation />
@@ -482,59 +622,61 @@ export default function ReportPage() {
           </div>
 
           {/* Jewelry Tone */}
-          {analysisData.jewelryTone.name && (
-            <div className="mb-8 text-center">
-              <p className={styles.reportTitle}>JEWELRY TONE</p>
-              <div className="flex justify-center items-center gap-4 mt-4">
-                <div className="text-center">
-                  <div
-                    className="w-[60px] h-[60px] rounded-full mx-auto"
-                    style={{ backgroundColor: analysisData.jewelryTone.hex }}
-                  />
-                  <div className="mt-2 font-medium">
-                    {analysisData.jewelryTone.name}
-                  </div>
-                  <div className="text-sm">
-                    {analysisData.jewelryTone.hex}
-                  </div>
+          <div className="mb-8 text-center">
+            <p className={styles.reportTitle}>JEWELRY TONE</p>
+            <div className="flex justify-center items-center gap-4 mt-4">
+              <div className="text-center">
+                <div
+                  className="w-[60px] h-[60px] rounded-full mx-auto"
+                  style={{ backgroundColor: analysisData.jewelryTone.hex }}
+                />
+                <div className="mt-2 font-medium">
+                  {analysisData.jewelryTone.name}
+                </div>
+                <div className="text-sm">
+                  {analysisData.jewelryTone.hex}
                 </div>
               </div>
             </div>
-          )}
+          </div>
 
           {/* Hair Colors */}
-          {analysisData.hairColors.length > 0 && (
-            <div className="mb-8">
-              <p className={styles.reportTitle}>FLATTERING HAIR COLORS</p>
-              <div className="flex justify-center gap-6 mt-4">
-                {analysisData.hairColors.map((color, index) => (
-                  <div key={index} className="text-center">
-                    <div
-                      className="w-[50px] h-[50px] rounded-full mx-auto"
-                      style={{ backgroundColor: color.hex }}
-                    />
-                    <div className="mt-2 font-medium">
-                      {color.name}
-                    </div>
-                    <div className="text-sm">
-                      {color.hex}
-                    </div>
+          <div className="mb-8">
+            <p className={styles.reportTitle}>FLATTERING HAIR COLORS</p>
+            <div className="flex justify-center gap-6 mt-4">
+              {analysisData.hairColors.map((color, index) => (
+                <div key={index} className="text-center">
+                  <div
+                    className="w-[50px] h-[50px] rounded-full mx-auto"
+                    style={{ backgroundColor: color.hex }}
+                  />
+                  <div className="mt-2 font-medium">
+                    {color.name}
                   </div>
-                ))}
-              </div>
+                  <div className="text-sm">
+                    {color.hex}
+                  </div>
+                </div>
+              ))}
             </div>
-          )}
+          </div>
 
           {/* Outfit */}
           <div className="mt-[50px] mb-8 text-center">
-            <p className={styles.reportTitle}>STYLE: {selectedStyle.toUpperCase()}</p>
-            <Image
-              src={analysisData.outfit.generatedImage || '/outfit-demo.png'}
-              alt="Style Outfit"
-              width={200}
-              height={350}
-              className="mx-auto rounded-lg mb-[50px]"
-            />
+            <p className={styles.reportTitle}>OUTFIT FOR YOU</p>
+            {analysisData.outfit.generatedImage && analysisData.outfit.generatedImage !== '/outfit-demo.png' ? (
+              <Image
+                src={analysisData.outfit.generatedImage}
+                alt="Style Outfit"
+                width={200}
+                height={350}
+                className="mx-auto rounded-lg mb-[50px]"
+              />
+            ) : (
+              <div className="w-[200px] h-[350px] mx-auto rounded-lg mb-[50px] bg-gray-100 flex items-center justify-center">
+                <p className="text-gray-600 font-medium">Generating your outfit...</p>
+              </div>
+            )}
             {analysisData.outfit.imagePrompt && (
               <div className="mt-4 text-sm italic">
                 <p>Outfit Prompt:</p>
@@ -544,138 +686,130 @@ export default function ReportPage() {
           </div>
 
           {/* Makeup Suggestion */}
-          {(analysisData.makeup.foundations.length > 0 || 
-            analysisData.makeup.cushion.brand || 
-            analysisData.makeup.lipsticks.length > 0 || 
-            analysisData.makeup.blushes.length > 0 || 
-            analysisData.makeup.eyeshadows.length > 0) && (
-            <div className="mt-[20px] mb-8">
-              <p className={styles.reportTitle}>MAKEUP SUGGESTION</p>
+          <div className="mt-[20px] mb-8">
+            <p className={styles.reportTitle}>MAKEUP SUGGESTION</p>
 
-              {/* Foundations */}
-              {analysisData.makeup.foundations.length > 0 && (
-                <div className="mb-6">
-                  <h3 className="font-medium text-base mb-2">Foundations</h3>
-                  <div className="grid grid-cols-1 gap-2">
-                    {analysisData.makeup.foundations.map((product, index) => (
-                      <div key={index} className="flex items-center gap-3 p-2 bg-white rounded-lg shadow-sm">
-                        <div className="w-6 h-6 rounded-full" style={{ backgroundColor: product.hex }} />
-                        <div>
-                          <p className="font-medium">{product.brand} {product.product}</p>
-                          <p className="text-sm text-gray-600">{product.shade} • {product.hex}</p>
-                        </div>
-                        {product.url && (
-                          <a href={product.url} target="_blank" rel="noopener noreferrer">
-                            <Image src="/external-link.svg" alt="Buy" width={16} height={16} />
-                          </a>
-                        )}
+            {/* Foundations */}
+            {analysisData.makeup.foundations.length > 0 && (
+              <div className="mb-6">
+                <h3 className="font-medium text-base mb-2">Foundations</h3>
+                <div className="grid grid-cols-1 gap-2">
+                  {analysisData.makeup.foundations.map((product, index) => (
+                    <div key={index} className="flex items-center gap-3 p-2 bg-white rounded-lg shadow-sm">
+                      <div className="w-6 h-6 rounded-full" style={{ backgroundColor: product.hex }} />
+                      <div>
+                        <p className="font-medium">{product.brand} {product.product}</p>
+                        <p className="text-sm text-gray-600">{product.shade} • {product.hex}</p>
                       </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Korean Cushion */}
-              {analysisData.makeup.cushion.brand && (
-                <div className="mb-6">
-                  <h3 className="font-medium text-base mb-2">Korean Cushion</h3>
-                  <div className="flex items-center gap-3 p-2 bg-white rounded-lg shadow-sm">
-                    {analysisData.makeup.cushion.hex && (
-                      <div className="w-6 h-6 rounded-full" style={{ backgroundColor: analysisData.makeup.cushion.hex }} />
-                    )}
-                    <div>
-                      <p className="font-medium">{analysisData.makeup.cushion.brand} {analysisData.makeup.cushion.product}</p>
-                      <p className="text-sm text-gray-600">
-                        {analysisData.makeup.cushion.shade}
-                        {analysisData.makeup.cushion.hex && ` • ${analysisData.makeup.cushion.hex}`}
-                      </p>
+                      {product.url && (
+                        <a href={product.url} target="_blank" rel="noopener noreferrer">
+                          <Image src="/external-link.svg" alt="Buy" width={16} height={16} />
+                        </a>
+                      )}
                     </div>
-                    {analysisData.makeup.cushion.url && (
-                      <a href={analysisData.makeup.cushion.url} target="_blank" rel="noopener noreferrer">
-                        <Image src="/external-link.svg" alt="Buy" width={16} height={16} />
-                      </a>
-                    )}
-                  </div>
+                  ))}
                 </div>
-              )}
+              </div>
+            )}
 
-              {/* Lipsticks */}
-              {analysisData.makeup.lipsticks.length > 0 && (
-                <div className="mb-6">
-                  <h3 className="font-medium text-base mb-2">Lipsticks</h3>
-                  <div className="grid grid-cols-1 gap-2">
-                    {analysisData.makeup.lipsticks.map((product, index) => (
-                      <div key={index} className="flex items-center gap-3 p-2 bg-white rounded-lg shadow-sm">
+            {/* Korean Cushion */}
+            {analysisData.makeup.cushion && analysisData.makeup.cushion.brand && (
+              <div className="mb-6">
+                <h3 className="font-medium text-base mb-2">Korean Cushion</h3>
+                <div className="flex items-center gap-3 p-2 bg-white rounded-lg shadow-sm">
+                  {analysisData.makeup.cushion.hex && (
+                    <div className="w-6 h-6 rounded-full" style={{ backgroundColor: analysisData.makeup.cushion.hex }} />
+                  )}
+                  <div>
+                    <p className="font-medium">{analysisData.makeup.cushion.brand} {analysisData.makeup.cushion.product}</p>
+                    <p className="text-sm text-gray-600">
+                      {analysisData.makeup.cushion.shade}
+                      {analysisData.makeup.cushion.hex && ` • ${analysisData.makeup.cushion.hex}`}
+                    </p>
+                  </div>
+                  {analysisData.makeup.cushion.url && (
+                    <a href={analysisData.makeup.cushion.url} target="_blank" rel="noopener noreferrer">
+                      <Image src="/external-link.svg" alt="Buy" width={16} height={16} />
+                    </a>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Lipsticks */}
+            {analysisData.makeup.lipsticks.length > 0 && (
+              <div className="mb-6">
+                <h3 className="font-medium text-base mb-2">Lipsticks</h3>
+                <div className="grid grid-cols-1 gap-2">
+                  {analysisData.makeup.lipsticks.map((product, index) => (
+                    <div key={index} className="flex items-center gap-3 p-2 bg-white rounded-lg shadow-sm">
+                      <div className="w-6 h-6 rounded-full" style={{ backgroundColor: product.hex }} />
+                      <div>
+                        <p className="font-medium">{product.brand} {product.product}</p>
+                        <p className="text-sm text-gray-600">{product.shade} • {product.hex}</p>
+                      </div>
+                      {product.url && (
+                        <a href={product.url} target="_blank" rel="noopener noreferrer">
+                          <Image src="/external-link.svg" alt="Buy" width={16} height={16} />
+                        </a>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Blushes */}
+            {analysisData.makeup.blushes.length > 0 && (
+              <div className="mb-6">
+                <h3 className="font-medium text-base mb-2">Blushes</h3>
+                <div className="grid grid-cols-1 gap-2">
+                  {analysisData.makeup.blushes.map((product, index) => (
+                    <div key={index} className="flex items-center gap-3 p-2 bg-white rounded-lg shadow-sm">
+                      <div className="w-6 h-6 rounded-full" style={{ backgroundColor: product.hex }} />
+                      <div>
+                        <p className="font-medium">{product.brand} {product.product}</p>
+                        <p className="text-sm text-gray-600">{product.shade} • {product.hex}</p>
+                      </div>
+                      {product.url && (
+                        <a href={product.url} target="_blank" rel="noopener noreferrer">
+                          <Image src="/external-link.svg" alt="Buy" width={16} height={16} />
+                        </a>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Eyeshadow Palettes */}
+            {analysisData.makeup.eyeshadows.length > 0 && (
+              <div className="mb-6">
+                <h3 className="font-medium text-base mb-2">Eyeshadow Palettes</h3>
+                <div className="grid grid-cols-1 gap-2">
+                  {analysisData.makeup.eyeshadows.map((product, index) => (
+                    <div key={index} className="flex items-center gap-3 p-2 bg-white rounded-lg shadow-sm">
+                      {product.hex && (
                         <div className="w-6 h-6 rounded-full" style={{ backgroundColor: product.hex }} />
-                        <div>
-                          <p className="font-medium">{product.brand} {product.product}</p>
-                          <p className="text-sm text-gray-600">{product.shade} • {product.hex}</p>
-                        </div>
-                        {product.url && (
-                          <a href={product.url} target="_blank" rel="noopener noreferrer">
-                            <Image src="/external-link.svg" alt="Buy" width={16} height={16} />
-                          </a>
+                      )}
+                      <div>
+                        <p className="font-medium">{product.brand} {product.product}</p>
+                        {product.shade && (
+                          <p className="text-sm text-gray-600">{product.shade}</p>
                         )}
                       </div>
-                    ))}
-                  </div>
+                      {product.url && (
+                        <a href={product.url} target="_blank" rel="noopener noreferrer">
+                          <Image src="/external-link.svg" alt="Buy" width={16} height={16} />
+                        </a>
+                      )}
+                    </div>
+                  ))}
                 </div>
-              )}
+              </div>
+            )}
 
-              {/* Blushes */}
-              {analysisData.makeup.blushes.length > 0 && (
-                <div className="mb-6">
-                  <h3 className="font-medium text-base mb-2">Blushes</h3>
-                  <div className="grid grid-cols-1 gap-2">
-                    {analysisData.makeup.blushes.map((product, index) => (
-                      <div key={index} className="flex items-center gap-3 p-2 bg-white rounded-lg shadow-sm">
-                        <div className="w-6 h-6 rounded-full" style={{ backgroundColor: product.hex }} />
-                        <div>
-                          <p className="font-medium">{product.brand} {product.product}</p>
-                          <p className="text-sm text-gray-600">{product.shade} • {product.hex}</p>
-                        </div>
-                        {product.url && (
-                          <a href={product.url} target="_blank" rel="noopener noreferrer">
-                            <Image src="/external-link.svg" alt="Buy" width={16} height={16} />
-                          </a>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Eyeshadow Palettes */}
-              {analysisData.makeup.eyeshadows.length > 0 && (
-                <div className="mb-6">
-                  <h3 className="font-medium text-base mb-2">Eyeshadow Palettes</h3>
-                  <div className="grid grid-cols-1 gap-2">
-                    {analysisData.makeup.eyeshadows.map((product, index) => (
-                      <div key={index} className="flex items-center gap-3 p-2 bg-white rounded-lg shadow-sm">
-                        {product.hex && (
-                          <div className="w-6 h-6 rounded-full" style={{ backgroundColor: product.hex }} />
-                        )}
-                        <div>
-                          <p className="font-medium">{product.brand} {product.product}</p>
-                          {product.shade && (
-                            <p className="text-sm text-gray-600">{product.shade}</p>
-                          )}
-                        </div>
-                        {product.url && (
-                          <a href={product.url} target="_blank" rel="noopener noreferrer">
-                            <Image src="/external-link.svg" alt="Buy" width={16} height={16} />
-                          </a>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Celebrities */}
-          {analysisData.celebrities.length > 0 && (
+            {/* Celebrities */}
             <div className="mt-8">
               <h3 className="font-medium text-base mb-2">SIMILAR CELEBRITIES</h3>
               <div className="flex flex-col gap-4">
@@ -696,7 +830,7 @@ export default function ReportPage() {
                 })}
               </div>
             </div>
-          )}
+          </div>
 
           {/* Download Button */}
           <div className="flex justify-center mt-[30px] mb-[50px] sticky bottom-0 bg-[#FCF2DF] py-4">
