@@ -1,0 +1,346 @@
+/* Layout */
+.container {
+    width: 375px;
+    height: 667px;
+    background-color: #F9F1E7;
+    padding: 1rem;
+    margin: 0 auto;
+    font-family: sans-serif;
+}
+
+.title {
+    text-align: center;
+    font-size: 1.5rem;
+    font-family: serif;
+    color: black;
+    margin-bottom: 1rem;
+    letter-spacing: 0.05em;
+}
+
+.sectionTitle {
+    font-size: 0.875rem;
+    font-weight: bold;
+    color: black;
+    margin-bottom: 0.5rem;
+}
+
+.baseColors {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+}
+
+.colorSwatch {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.colorCircle {
+    width: 3rem;
+    height: 3rem;
+    border-radius: 9999px;
+    border: 1px solid #000;
+}
+
+.colorLabel {
+    font-size: 0.75rem;
+    margin-top: 0.25rem;
+}
+
+.paletteGrid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.5rem;
+}
+
+.paletteSwatch {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    font-size: 0.625rem;
+}
+
+.paletteColor {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 0.25rem;
+    border: 1px solid #000;
+}
+
+.paletteName {
+    font-size: 0.625rem;
+}
+
+.paletteHex {
+    font-size: 0.5625rem;
+}
+
+.outfitList {
+    font-size: 0.75rem;
+    line-height: 1.5;
+    margin-top: 1.5rem;
+}
+
+.outfitItem {
+    margin-bottom: 0.25rem;
+}
+
+/* Layout */
+.container {
+    background-color: #FCF2DF;
+    height: 822px;
+    width: 375px;
+    overflow-y: scroll;
+    padding: 24px;
+    font-family: 'quicksand', sans-serif;
+    color: #3c3334;
+  }
+  .topBar {
+    position: relative;
+    margin-bottom: 1.5rem;
+  }
+  
+  .back {
+    position: absolute;
+    top: 3rem;
+    left: 1.5rem;
+    color: #B5A99D;
+    font-family: "Advent Pro";
+    font-size: 35px;
+    font-weight: 100;
+    cursor: pointer;
+  }
+  
+  
+  .logo {
+    display: block;
+    width: 157px;
+    margin: 5.5rem auto 0.5rem;
+    filter: drop-shadow(0px 2px 2px rgba(0, 0, 0, 0.1));
+  }
+  .seasonalColorReport {
+    color: #746E66;
+    text-align: center;
+    text-shadow: 0px 1px 1px rgba(45, 41, 36, 0.50);
+    -webkit-text-stroke-width: 0.5px;
+    -webkit-text-stroke-color: #C3C3C3;
+    font-family: "Red Hat Display";
+    font-size: 18px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: normal;
+    letter-spacing: 4px;
+  }
+  .reportTitle {
+    color: #000;
+    text-align: center;
+    text-shadow: 0px 2px 2px rgba(0, 0, 0, 0.10);
+    font-family: Quicksand;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: normal;
+    letter-spacing: 3.5px;
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+  }
+  
+  .colorHex {
+    color: #000;
+    text-align: center;
+    font-family: Quicksand;
+    font-size: 11px;
+    font-weight: 200;
+    line-height: normal;
+    letter-spacing: 0.88px;
+    margin: 5px 0 20px 0;
+  }
+
+    .seasonalColorLabel{
+    color: #000;
+    text-align: center;
+    font-family: Quicksand;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: normal;
+    letter-spacing: 3.5px;
+    padding-left: 12px;
+    margin-top: 20px;
+    }
+
+    .colorType {
+    color: #000;
+    text-align: center;
+    text-shadow: 0px 1px 2px rgba(0, 0, 0, 0.25);
+    font-family: Orienta;
+    font-size: 28px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: normal;
+    letter-spacing: 9.8px;
+    text-transform: uppercase;
+    margin: 0 auto 25px;
+    }
+
+
+  /* Header */
+  .header {
+    position: sticky;
+    top: 0;
+    background-color: #FEDCB6;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 16px;
+    z-index: 10;
+  }
+
+  
+  /* Info Section */
+  .section {
+    margin-bottom: 32px;
+  }
+  .labelText {
+    color: #000;
+    font-family: 'Quicksand', sans-serif;
+    font-size: 18px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: normal;
+    letter-spacing: 1.44px;
+    text-transform: capitalize;
+  }
+  
+  .valueText {
+    color: #000;
+    font-family: 'Quicksand', sans-serif;
+    font-size: 18px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: normal;
+    letter-spacing: 1.44px;
+    text-transform: capitalize;
+  }
+
+  
+  .infoIcon {
+    position: absolute;;
+    margin-right: 8px;
+    cursor: pointer;
+  }
+  
+  /* Color Circles */
+  .colorRow {
+    display: flex;
+    gap: 40px;
+    align-items: center;
+  }
+  
+  .colorLabel {
+    font-size: 12px;
+    text-align: center;
+    margin-top: 4px;
+  }
+  
+  
+  /* Palette Grid */
+  .paletteGrid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 33px;
+  }
+  
+  .paletteBox {
+    width: 50px;
+    height: 50px;
+    border-radius: 3px;
+    margin: 0 auto;
+  }
+  
+  .paletteLabel {
+    font-size: 12px;
+    text-align: center;
+    margin-top: 4px;
+  }
+  
+  /* Style Section */
+  .styleImage {
+    width: 200px;
+    height: 350px;
+    object-fit: cover;
+    border-radius: 8px;
+    display: block;
+    margin: 0 auto;
+  }
+  
+  /* Makeup Items */
+  .makeupItem {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+  
+  .makeupImage {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 8px;
+  }
+  
+  .makeupText {
+    display: flex;
+    flex-direction: column;
+    font-size: 13px;
+  }
+  
+  .makeupText a {
+    color: #0b63ce;
+    text-decoration: underline;
+    font-weight: 500;
+  }
+  
+  /* Celebrity */
+  .celebrityRow {
+    display: flex;
+    justify-content: center;
+    gap: 95px;
+  }
+  
+  .celebrityBox {
+    text-align: center;
+  }
+  
+  .celebrityImage {
+    width: 94px;
+    height: 110px;
+    border-radius: 11px;
+    object-fit: cover;
+  }
+  
+  .downloadBtn {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 203px;
+    height: 49px;
+    border: none;
+    border-radius: 13px;
+    background: rgba(255, 210, 165, 0.70);
+    box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.10);
+    color: #827D76;
+    text-align: center;
+    font-family: Quicksand;
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 2.1px;
+    text-transform: uppercase;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+  }
+  

@@ -1,0 +1,58 @@
+.container {
+    width: 375px;
+    height: 667px;
+    background-color: #F9F1E7;
+    padding: 1rem;
+    margin: 0 auto;
+    font-family: sans-serif;
+}
+ 
+.logo {
+    display: block;
+    width: 157px;
+    margin: 5.5rem auto 0.5rem;
+    filter: drop-shadow(0px 2px 2px rgba(0, 0, 0, 0.1));
+  }
+
+.seasonalColorReport {
+  color: #746E66;
+  text-align: center;
+  text-shadow: 0px 1px 1px rgba(45, 41, 36, 0.50);
+  -webkit-text-stroke-width: 0.5px;
+  -webkit-text-stroke-color: #C3C3C3;
+  font-family: "Red Hat Display";
+  font-size: 18px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: normal;
+  letter-spacing: 4px;
+}
+  
+  .loginBox {
+    padding: 2rem;
+    background: white;
+    border-radius: 1rem;
+    box-shadow: 0 0 12px rgba(0, 0, 0, 0.1);
+  }
+  
+  .login{
+    border-radius: 33px;
+  background: rgba(224, 175, 123, 0.70);
+  box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.10);
+  backdrop-filter: blur(2px);
+  padding: 1rem 7rem;
+  color: #FFF;
+  font-family: "Poiret One";
+  font-size: 13px;
+  font-weight: 400;
+  letter-spacing: 3.9px;
+  border: none;
+  -webkit-text-stroke: 1.2px #FFF;
+  cursor: pointer;
+
+  }
+  
+  .loginButton:hover {
+    background-color: #e67e4e;
+  }
+  

@@ -1,0 +1,84 @@
+@import url('https://fonts.googleapis.com/css2?family=Poiret+One&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Advent+Pro:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Red+Hat+Display:wght@400;500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Orienta&display=swap');
+
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Quicksand', sans-serif;
+}
+
+.mobile-display {
+  width: 375px;
+  height: 822px;
+  background-size: cover;
+  border-radius: 30px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+  /* margin: 2rem auto; */
+  position: relative;
+}
+
+.topBar {
+  position: relative;
+  margin-bottom: 1.5rem;
+}
+
+.back {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  color: rgba(255, 255, 255, 0.8);
+  font-family: "Advent Pro";
+  font-size: 35px;
+  font-weight: 100;
+  cursor: pointer;
+}
+
+.login {
+  /* Positioning */
+  position: absolute;
+  top: 40px;
+  right: 3px;
+
+  /* Appearance */
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  overflow: hidden;
+
+  /* Typography */
+  font-family: 'Quicksand', sans-serif;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 100;
+  line-height: normal;
+  letter-spacing: 1.6px;
+  text-transform: uppercase;
+
+  /* Text Appearance */
+  color: #FFF;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-shadow: 2px 1px 1px rgba(0, 0, 0, 0.5);
+
+  /* Underline Styling */
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.logo {
+  display: block;
+  width: 193.3px;
+  margin: 5rem auto 3rem;
+  filter: drop-shadow(0px 2px 2px rgba(0, 0, 0, 0.2));
+}

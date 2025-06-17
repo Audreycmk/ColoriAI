@@ -1,0 +1,197 @@
+.container {
+  position: relative;
+  padding: 2rem;
+  min-height: 100vh;
+  background-size: cover;
+}
+
+.topBar {
+  position: relative;
+  margin-bottom: 1.5rem;
+}
+
+.back {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  color: rgba(255, 255, 255, 0.8);
+  font-family: "Advent Pro";
+  font-size: 35px;
+  font-weight: 100;
+  cursor: pointer;
+}
+
+.login {
+  position: absolute;
+  top: 63px;
+  right: 14px;
+  background: transparent;
+  color: #fff;
+  border: none;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+
+.logo {
+  display: block;
+  width: 193.3px;
+  margin: 5rem auto 3rem;
+  filter: drop-shadow(0px 2px 2px rgba(0, 0, 0, 0.2));
+}
+
+.heading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 1.5rem auto;
+  color: #000;
+  text-align: center;
+  font-family: "Poiret One";
+  font-size: 25px;
+  font-weight: 400;
+  letter-spacing: 2.5px;
+  -webkit-text-stroke: 1px #000;
+}
+
+.cameraCircle {
+  width: 160px;
+  height: 160px;
+  border-radius: 50%;
+  border: 2px dashed rgba(55, 55, 55, 0.3);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 2rem auto;
+  background: rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(4px);
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.uploadBtn {
+  display: inline-block;
+  white-space: nowrap;
+  border-radius: 20px;
+  background: rgba(224, 175, 123, 0.70);
+  box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.10);
+  backdrop-filter: blur(10px);
+  width: 200px;
+  height: 40px;
+  padding: 10px 110px;
+  margin: 3rem auto 2rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #FFF;
+  font-family: "Poiret One";
+  font-size: 13px;
+  font-weight: 400;
+  letter-spacing: 3.9px;
+  border: none;
+  -webkit-text-stroke: 1.2px #FFF;
+  cursor: pointer;
+}
+
+.photoContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.photoPreview {
+  width: 235px;
+  height: 325px;
+  aspect-ratio: 47/65;
+  object-fit: cover;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.chooseAgainBtn {
+  color: white;
+  font-family: "Poiret One";
+  border-radius: 30px;
+  border: none;
+  background: rgba(0, 0, 0, 0.50);
+  box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.10);
+  backdrop-filter: blur(7.5px);
+  padding: 0.6rem 1.8rem;
+  justify-content: center;
+  align-items: center;
+  display: flex;
+  margin: 0 auto 1.5rem;
+  gap: 10px;
+  letter-spacing: 0.2rem;
+  cursor: pointer;
+}
+
+.continueBtn {
+  border-radius: 33px;
+  background: rgba(224, 175, 123, 0.70);
+  box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.10);
+  backdrop-filter: blur(2px);
+  padding: 1rem 7rem;
+  color: #FFF;
+  font-family: "Poiret One";
+  font-size: 13px;
+  font-weight: 400;
+  letter-spacing: 3.9px;
+  border: none;
+  -webkit-text-stroke: 1.2px #FFF;
+  cursor: pointer;
+  display: flex;
+  margin: 4.5rem auto auto;
+}
+
+.uploadBackground {
+  background: url('/Upload photo.svg') no-repeat}
+
+.confirmBackground {
+  background: url('/Confirm photo.svg') no-repeat
+}
+
+.fadeIn {
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* report -testing */
+.resultCard {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background-color: rgba(255, 255, 255, 0.92);
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  max-width: 90%;
+  margin-left: auto;
+  margin-right: auto;
+  animation: fadeIn 0.4s ease-in-out;
+}
+
+.resultTitle {
+  font-size: 1.25rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+  color: #333;
+  text-align: center;
+}
+
+.resultText {
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: #444;
+  white-space: pre-wrap;
+  text-align: left;
+}
+
