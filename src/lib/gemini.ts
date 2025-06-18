@@ -19,7 +19,7 @@ const genAI = new GoogleGenerativeAI(apiKey);
 export async function analyzeFace(imageBase64: string, age?: string, style?: string) {
   try {
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-
+ 
     // Parse base64 input and extract MIME type
     const parts = imageBase64.split(',');
     if (parts.length < 2) {
@@ -40,7 +40,7 @@ export async function analyzeFace(imageBase64: string, age?: string, style?: str
     // This provides robustness even if UI guarantees choice.
     const promptStyle = style || 'Daily'; 
 
-    const prompt = `
+    const prompt = `                   
    You are a professional Korean 16-season color stylist.  
 
    The following image is a user-submitted photo for seasonal color analysis.  
@@ -79,7 +79,7 @@ export async function analyzeFace(imageBase64: string, age?: string, style?: str
 
    7. **2 Similar Celebrities** — name only (no images or descriptions)
 
-   8. **Image Prompt** Flatlay of a **${promptStyle}** summer outfit for a person around age **${promptAge}**.  
+   8. **Image Prompt** Flatlay of a **${promptStyle}** summer outfit for a person age **${promptAge}**.  
    Include exactly **5 items**:  
    - 1 top  
    - 1 bottom  
@@ -87,10 +87,10 @@ export async function analyzeFace(imageBase64: string, age?: string, style?: str
    - 1 bag  
    - 1 pair of glasses  
 
-   Use **only 3 HEX colors** from the seasonal palette.  
-   No people, no shadows, no accessories.  
+   Use **only 3 colors** from the seasonal palette.  
+   No people, no shadows, no accessories, no hex code.  
    Background must be clean and layout visible.  
-   Give a single sentence output, formatted for use in DALL·E 3.
+   Give a simple single sentence output, formatted for use in DALL·E 3.
    `;
 
       const result = await model.generateContent([

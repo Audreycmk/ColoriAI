@@ -70,49 +70,15 @@ export default function SelfiePageClient() {
     }).toString();
 
     try {
-      // First, get the Gemini analysis
-      const promptRes = await fetch('/api/generate-prompt', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          imageBase64: imageSrc,
-          age: userSelectedAge,
-          style: userPreferredStyle,
-        }),
-      });
+      // Store the image data in localStorage for the loading page
+      localStorage.setItem('pendingImageAnalysis', imageSrc);
+      localStorage.setItem('pendingAge', userSelectedAge || '');
+      localStorage.setItem('pendingStyle', userPreferredStyle || '');
 
-      if (!promptRes.ok) {
-        const errorText = await promptRes.text();
-        console.error('❌ Gemini API Error Response:', errorText);
-        throw new Error(`Gemini API failed: ${errorText}`);
-      }
+      // Redirect to loading page immediately
+      router.push('/loading');
 
-      const { result } = await promptRes.json();
-      console.log('🧠 Gemini Result:', result);
-
-      // Store the Gemini result first
-      localStorage.setItem('reportResult', result);
-
-      // Navigate to report page immediately
-      router.push(`/report?${redirectParams}`);
-
-      // Then generate the DALL·E image in the background
-      const match = result.match(/\*\*Image Prompt:\*\*\s*(.+)/);
-      const imagePrompt = match?.[1]?.trim();
-
-      if (imagePrompt && imagePrompt.length >= 10) {
-        const imageGenRes = await fetch('/api/generate-and-upload-image', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ imagePrompt }),
-        });
-
-        if (imageGenRes.ok) {
-          const { imageUrl } = await imageGenRes.json();
-          console.log('🖼️ Cloudinary Image URL:', imageUrl);
-          localStorage.setItem('generatedImageUrl', imageUrl);
-        }
-      }
+      // The loading page will handle the actual analysis and image generation
     } catch (error) {
       console.error('Error:', error);
       router.push('/error?message=An error occurred. Please try again.');

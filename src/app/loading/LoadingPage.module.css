@@ -1,0 +1,57 @@
+/* LoadingPage.module.css */
+.container {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.container video {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 0;
+}
+
+.content {
+  position: relative;
+  z-index: 10;
+  /* background: rgba(255, 255, 255, 0.8); */
+  padding: 2rem;
+  border-radius: 1rem;
+  max-width: 300px;
+  margin: 0 auto;
+  top: 30%;
+  transform: translateY(-50%);
+}
+
+.title {
+  font-size: 1.5rem;
+  color: #333;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.progressBar {
+  width: 100%;
+  height: 10px;
+  background: #e0e0e0;
+  border-radius: 5px;
+  margin: 1rem 0;
+}
+
+.progressFill {
+  height: 100%;
+  background: linear-gradient(90deg, #FFD2A5, #FFB87A);
+  border-radius: 5px;
+  transition: width 0.3s ease;
+}
+
+.status {
+  font-size: 0.9rem;
+  color: #333;
+  text-align: center;
+}
