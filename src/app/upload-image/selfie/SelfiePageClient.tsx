@@ -39,6 +39,12 @@ export default function SelfiePageClient() {
       setUserPreferredStyle(styleFromCookie);
       console.log('🍪 Cookie - preferredStyle:', styleFromCookie);
     }
+
+    // Clear any existing report data when starting a new test
+    localStorage.removeItem('reportResult');
+    localStorage.removeItem('generatedImageUrl');
+    localStorage.removeItem('generatedOutfitImage');
+    console.log('🧹 Cleared existing report data for new test');
   }, [router]);
 
   const handleClickChooseAgain = () => {

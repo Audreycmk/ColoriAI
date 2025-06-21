@@ -3,6 +3,12 @@
 # Node.js dependencies
 node_modules/
 
+# .gitignore
+.env
+.env.local
+.env.*.local
+
+
 # Yarn (monorepo support)
 .pnp.*
 .yarn/*
@@ -26,10 +32,6 @@ dist/
 # TypeScript
 *.tsbuildinfo
 next-env.d.ts
-
-# Env files
-.env
-.env.*.local
 
 # Vercel
 .vercel/

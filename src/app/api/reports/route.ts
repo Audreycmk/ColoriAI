@@ -105,11 +105,15 @@ export async function GET() {
     await connectToDatabase();
 
     const { userId } = await auth();
+    console.log('🔍 Reports API - User ID:', userId);
+    
     if (!userId) {
+      console.log('❌ Reports API - No user ID found');
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const reports = await Report.find({ userId }).sort({ createdAt: -1 });
+    console.log(`📊 Reports API - Found ${reports.length} reports for user ${userId}`);
     
     // Ensure we always return an array
     if (!Array.isArray(reports)) {

@@ -27,6 +27,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <body className="antialiased">
           {/* Page Content */}
           <PageWrapper>{children}</PageWrapper>
+
         </body>
       </html>
     </ClerkProvider>

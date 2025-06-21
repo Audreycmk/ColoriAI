@@ -353,9 +353,9 @@ export default function AdminPage() {
                       <td className="px-6 py-4 whitespace-nowrap space-x-2">
                         {!user.isAdmin && (
                           <>
-                            <Link href={`/report/${user.id}`}>
+                            <Link href={`/report-history?userId=${user.id}`}>
                               <button className="text-sm text-blue-600 hover:text-blue-900 font-medium">
-                                View Report
+                                View Reports
                               </button>
                             </Link>
                             <button
