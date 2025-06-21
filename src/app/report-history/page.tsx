@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import styles from '../report/ReportPage.module.css';
 
 interface Report {
@@ -25,7 +25,6 @@ interface Report {
 }
 
 export default function ReportHistoryPage() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const [reports, setReports] = useState<Report[]>([]);
   const [loading, setLoading] = useState(true);

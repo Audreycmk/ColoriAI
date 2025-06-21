@@ -1,5 +1,3 @@
-import { PrismaClient } from '@prisma/client';
-
 export const reportSchema = {
   id: String,
   userId: String,
@@ -21,11 +19,11 @@ export type Report = {
   userName: string;
   colorResult: string;
   timestamp: Date;
-  extractedColors: Record<string, any>;
-  colorPalette: Record<string, any>;
+  extractedColors: Record<string, unknown>;
+  colorPalette: Record<string, unknown>;
   outfitImage: string | null;
-  makeupSuggestions: Record<string, any>;
-  celebrityReferences: Record<string, any>;
+  makeupSuggestions: Record<string, unknown>;
+  celebrityReferences: Record<string, unknown>;
   createdAt: Date;
   updatedAt: Date;
 }; 

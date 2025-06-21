@@ -3,7 +3,6 @@
 
 import { useEffect } from 'react';
 import styles from './StylePage.module.css';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import TransitionWrapper from '@/components/TransitionWrapper';
 import Cookies from 'js-cookie';
@@ -34,7 +33,7 @@ export default function StylePage() {
     Cookies.remove('styleOption');
     localStorage.removeItem('reportResult');
     localStorage.removeItem('generatedImageUrl');
-  }, []);
+  }, [router]);
 
   const handleStyleClick = (style: string) => {
     Cookies.set('preferredStyle', style, { expires: 1 }); // Save for 1 day

@@ -12,7 +12,7 @@ import '@/styles/style.css';
 export default function HomePage() {
   const router = useRouter();
   const { isLoaded, isSignedIn } = useAuth();
-  const [showLoginPopup, setShowLoginPopup] = useState(false);
+  const [showLoginPopup] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {

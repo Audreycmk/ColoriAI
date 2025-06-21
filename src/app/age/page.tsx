@@ -1,7 +1,6 @@
 //src/app/age/page.tsx
 'use client';
 
-import { useState, useEffect } from 'react';
 import styles from './AgePage.module.css';
 import { useRouter } from 'next/navigation';
 import TransitionWrapper from '@/components/TransitionWrapper';

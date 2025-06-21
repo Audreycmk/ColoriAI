@@ -3,7 +3,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import styles from './SelfiePage.module.css';
-import Link from 'next/link';
 import Navigation from '@/components/Navigation';
 import Cookies from 'js-cookie';
 
@@ -14,7 +13,6 @@ export default function SelfiePageClient() {
   const [userPreferredStyle, setUserPreferredStyle] = useState<string | undefined>(undefined);
 
   const [imageSrc, setImageSrc] = useState<string | null>(null);
-  const [imageFile, setImageFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -58,7 +56,6 @@ export default function SelfiePageClient() {
     const reader = new FileReader();
     reader.onload = () => setImageSrc(reader.result as string);
     reader.readAsDataURL(file);
-    setImageFile(file);
   };
 
   const handleContinue = async () => {
@@ -68,12 +65,6 @@ export default function SelfiePageClient() {
     }
 
     setLoading(true);
-
-    const redirectParams = new URLSearchParams({
-      age: userSelectedAge || '',
-      style: userPreferredStyle || '',
-      returnTo: '/report',
-    }).toString();
 
     try {
       // Store the image data in localStorage for the loading page
@@ -108,7 +99,6 @@ export default function SelfiePageClient() {
             onClick={() => {
               if (imageSrc) {
                 setImageSrc(null);
-                setImageFile(null);
               } else {
                 router.back();
               }
