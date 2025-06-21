@@ -49,9 +49,9 @@ export default function AdminUserReportPage() {
   }, [id, router]);
 
   return (
-    <div className="mobile-display min-h-screen">
+    <div className="mobile-display min-h-screen flex flex-col">
       {/* Header */}
-      <div className="bg-[#FEDCB6] h-[202px] flex flex-col items-center justify-start px-4 pt-6 sticky top-0 z-10">
+      <div className="bg-[#FEDCB6] h-[202px] flex flex-col items-center justify-start px-4 pt-6 sticky top-0 z-10 flex-shrink-0">
         <div className="w-full flex justify-between items-center">
           <button onClick={() => router.back()} className="text-sm underline text-[#3c3334]">
             ← Back to Admin
@@ -62,19 +62,19 @@ export default function AdminUserReportPage() {
       </div>
 
       {/* Content Area */}
-      <div className="p-6 text-[#3c3334] text-sm font-medium bg-[#FCF2DF] min-h-[calc(100vh-202px)] overflow-y-auto" style={{ paddingBottom: '50px' }}>
+      <div className="p-6 text-[#3c3334] text-sm font-medium bg-[#FCF2DF] flex-1 overflow-y-auto" style={{ paddingBottom: '50px' }}>
         {loading ? (
-          <div className="flex items-center justify-center min-h-[calc(100vh-202px-48px)]">
+          <div className="flex items-center justify-center h-full">
             <p className="text-gray-500">Loading reports...</p>
           </div>
         ) : reports.length === 0 ? (
-          <div className="flex items-center justify-center min-h-[calc(100vh-202px-48px)]">
+          <div className="flex items-center justify-center h-full">
             <p className="text-gray-500">No reports found for this user.</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             {reports.map((report) => (
-              <div key={report._id} className="bg-white rounded-lg shadow p-4" style={{ marginBottom: '50px' }}>
+              <div key={report._id} className="bg-white rounded-lg shadow p-4" style={{ marginBottom: '30px' }}>
                 <p className="text-sm text-gray-500 mb-2">
                   Created: {new Date(report.createdAt).toLocaleString()}
                 </p>
