@@ -83,7 +83,7 @@ export default function ReportDetailPage() {
       <div className="flex justify-between items-center mb-[30px] mt-[30px]">
         <button 
           onClick={() => router.back()} 
-          className="ml-[10px] px-[10px] py-[5px] border-none rounded-[13px] text-center font-quicksand text-[14px] font-medium uppercase tracking-[1.1px] transition-colors"
+          className="ml-[10px] px-[10px] py-[5px] border-none rounded-[13px] text-center font-quicksand text-[14px] font-medium uppercase tracking-[1.1px] transition-colors cursor-pointer"
           style={{
             background: 'rgba(255, 210, 165, 0.70)',
             boxShadow: '0px 4px 4px rgba(0, 0, 0, 0.10)',
@@ -97,7 +97,7 @@ export default function ReportDetailPage() {
         <button
           onClick={handleDeleteReport}
           disabled={deleting}
-          className="mr-[10px] px-[10px] py-[5px] border-none rounded-[13px] text-center font-quicksand text-[14px] font-medium uppercase tracking-[1.1px] transition-colors disabled:opacity-50"
+          className="mr-[10px] px-[10px] py-[5px] border-none rounded-[13px] text-center font-quicksand text-[14px] font-medium uppercase tracking-[1.1px] transition-colors disabled:opacity-50 cursor-pointer"
           style={{
             background: 'rgb(241 171 35)',
             boxShadow: '0px 4px 4px rgba(0, 0, 0, 0.10)',

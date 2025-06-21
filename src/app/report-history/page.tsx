@@ -307,28 +307,33 @@ function ReportHistoryContent() {
                   </button>
                   
                   {/* Page Numbers */}
-                  <div
-                    className="flex gap-1 overflow-x-auto whitespace-nowrap"
-                    style={{ gap: '20px', maxWidth: '200px' }}
-                  >
-                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                      <button
-                        key={page}
-                        onClick={() => goToPage(page)}
-                        className={`w-[35px] h-[35px] text-sm font-medium transition-colors cursor-pointer inline-block`}
-                        style={{
-                          background: page === currentPage
-                            ? 'rgba(224, 175, 123, 1.0)'
-                            : 'rgba(224, 175, 123, 0.50)',
-                          color: '#000000',
-                          border: 'none',
-                          borderRadius: '8px',
-                          minWidth: '35px',
-                        }}
-                      >
-                        {page}
-                      </button>
-                    ))}
+                  <div className="flex flex-col items-center">
+                    <div
+                      className="flex gap-1 overflow-x-auto whitespace-nowrap"
+                      style={{ gap: '20px', maxWidth: '200px' }}
+                    >
+                      {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                        <button
+                          key={page}
+                          onClick={() => goToPage(page)}
+                          className={`w-[35px] h-[35px] text-sm font-medium transition-colors cursor-pointer inline-block`}
+                          style={{
+                            background: page === currentPage
+                              ? 'rgba(224, 175, 123, 1.0)'
+                              : 'rgba(224, 175, 123, 0.50)',
+                            color: '#000000',
+                            border: 'none',
+                            borderRadius: '8px',
+                            minWidth: '35px'
+                          }}
+                        >
+                          {page}
+                        </button>
+                      ))}
+                    </div>
+                    <div style={{ marginTop: '10px', color: '#827D76', fontSize: '13px', fontWeight: 500 }}>
+                      ← Scroll →
+                    </div>
                   </div>
                   
                   <button
