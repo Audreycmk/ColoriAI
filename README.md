@@ -1,3 +1,9 @@
+# ColoriAI
+
+A seasonal color analysis app that helps users discover their perfect color palette.
+
+<!-- Latest deployment fix: ESLint errors resolved -->
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started
