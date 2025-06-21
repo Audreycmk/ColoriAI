@@ -300,7 +300,8 @@ function ReportHistoryContent() {
                       background: 'rgba(224, 175, 123, 0.30)',
                       color: '#000000',
                       border: 'none',
-                      margin: '15px'
+                      marginRight: '15px',
+                      marginTop: '-35px'
                     }}
                   >
                     &lt;
@@ -309,8 +310,8 @@ function ReportHistoryContent() {
                   {/* Page Numbers */}
                   <div className="flex flex-col items-center">
                     <div
-                      className="flex gap-1 overflow-x-auto whitespace-nowrap"
-                      style={{ gap: '20px', maxWidth: '200px' }}
+                      className="flex gap-1 overflow-x-auto whitespace-nowrap mb-[30px] mt-[20px]"
+                      style={{ gap: '20px', maxWidth: '200px'}}
                     >
                       {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
                         <button
@@ -331,7 +332,7 @@ function ReportHistoryContent() {
                         </button>
                       ))}
                     </div>
-                    <div style={{ marginTop: '10px', color: '#827D76', fontSize: '13px', fontWeight: 500 }}>
+                    <div style={{ color: '#827D76', fontSize: '13px', fontWeight: 500 }}>
                       ← Scroll →
                     </div>
                   </div>
@@ -344,7 +345,8 @@ function ReportHistoryContent() {
                       background: 'rgba(224, 175, 123, 0.30)',
                       color: '#000000',
                       border: 'none',
-                      margin: '15px'
+                      marginLeft: '15px',
+                      marginTop: '-35px'
                     }}
                   >
                     &gt;
