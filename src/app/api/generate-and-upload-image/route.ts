@@ -53,31 +53,17 @@ export async function POST(req: Request) {
       throw new Error('No image URL in response');
     }
 
-    // Upload to Cloudinary
-    const uploadResponse = await fetch(imageUrl);
-    const imageBuffer = await uploadResponse.arrayBuffer();
+    console.log('🖼️ DALL-E generated image URL:', imageUrl);
 
-    // Convert to base64 for Cloudinary
-    const base64Image = Buffer.from(imageBuffer).toString('base64');
-    const dataURI = `data:image/png;base64,${base64Image}`;
+    // Upload to Cloudinary using the URL directly
+    const uploadResult = await cloudinary.v2.uploader.upload(imageUrl, {
+      folder: 'colori-outfits',
+      resource_type: 'image',
+    });
 
-    const formData = new FormData();
-    formData.append('file', dataURI);
-    formData.append('upload_preset', process.env.CLOUDINARY_UPLOAD_PRESET || 'colori');
+    console.log('✅ Image uploaded to Cloudinary:', uploadResult.secure_url);
 
-    const cloudinaryResponse = await fetch(
-      `https://api.cloudinary.com/v1_1/${process.env.CLOUDINARY_CLOUD_NAME}/image/upload`,
-      {
-        method: 'POST',
-        body: formData,
-      }
-    );
-
-    const cloudinaryData: { secure_url: string } = await cloudinaryResponse.json();
-
-    console.log('✅ Image uploaded to Cloudinary:', cloudinaryData.secure_url);
-
-    return NextResponse.json({ imageUrl: cloudinaryData.secure_url });
+    return NextResponse.json({ imageUrl: uploadResult.secure_url });
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     console.error('❌ Error in generate-and-upload-image:', errorMessage);

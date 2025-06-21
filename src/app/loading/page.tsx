@@ -47,9 +47,8 @@ export default function LoadingPage() {
           throw new Error('Gemini analysis failed');
         }
 
-        const { result, outfitImage } = await promptRes.json();
+        const { result } = await promptRes.json();
         console.log('Gemini Response:', result);
-        console.log('Outfit Image from API:', outfitImage);
         setProgress(50);
         
         // Remove URLs from the result before storing
@@ -58,15 +57,17 @@ export default function LoadingPage() {
         console.log('📝 Report saved to localStorage');
 
         // Step 2: DALL-E Image Generation (50-100%)
-        let generatedImageUrl = outfitImage || '';
+        let generatedImageUrl = '';
         
-        // If no outfit image from API, generate one
-        if (!outfitImage) {
-          const match = cleanedResult.match(/\*\*Image Prompt:\*\*\s*(.+)/);
-          const imagePrompt = match?.[1]?.trim();
+        // Extract image prompt and generate outfit image
+        const match = cleanedResult.match(/\*\*Image Prompt:\*\*\s*(.+)/);
+        const imagePrompt = match?.[1]?.trim();
 
-          if (imagePrompt && imagePrompt.length >= 10) {
-            setProgress(60);
+        if (imagePrompt && imagePrompt.length >= 10) {
+          setProgress(60);
+          console.log('🎨 Generating image with prompt:', imagePrompt);
+          
+          try {
             const imageGenRes = await fetch('/api/generate-and-upload-image', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
@@ -74,21 +75,29 @@ export default function LoadingPage() {
             });
 
             if (imageGenRes.ok) {
-              const { imageUrl } = await imageGenRes.json();
-              generatedImageUrl = imageUrl;
-              console.log('🏞️ Generated Image URL:', imageUrl);
-              localStorage.setItem('generatedImageUrl', imageUrl);
-              localStorage.setItem('generatedOutfitImage', imageUrl);
-              console.log('🖼️ Image URL saved to localStorage');
-              setProgress(100);
+              const imageData = await imageGenRes.json();
+              if (imageData.imageUrl) {
+                generatedImageUrl = imageData.imageUrl;
+                console.log('🏞️ Generated Image URL:', imageData.imageUrl);
+                localStorage.setItem('generatedImageUrl', imageData.imageUrl);
+                localStorage.setItem('generatedOutfitImage', imageData.imageUrl);
+                console.log('🖼️ Image URL saved to localStorage');
+                setProgress(100);
+              } else {
+                console.error('❌ No image URL in response:', imageData);
+                generatedImageUrl = '/outfit-demo.png'; // Fallback image
+              }
+            } else {
+              console.error('❌ Image generation failed:', imageGenRes.status);
+              generatedImageUrl = '/outfit-demo.png'; // Fallback image
             }
+          } catch (error) {
+            console.error('❌ Error generating image:', error);
+            generatedImageUrl = '/outfit-demo.png'; // Fallback image
           }
         } else {
-          // Use the outfitImage from the API response
-          console.log('🏞️ Using outfit image from API:', outfitImage);
-          localStorage.setItem('generatedImageUrl', outfitImage);
-          localStorage.setItem('generatedOutfitImage', outfitImage);
-          setProgress(100);
+          console.warn('⚠️ No valid image prompt found');
+          generatedImageUrl = '/outfit-demo.png'; // Fallback image
         }
 
         // Step 3: Save to Database (if user is signed in)
@@ -194,6 +203,7 @@ export default function LoadingPage() {
           autoPlay
           playsInline
           loop
+          muted
           className="w-full"
         >
           <source src="/Loading.mp4" type="video/mp4" />
