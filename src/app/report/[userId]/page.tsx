@@ -34,17 +34,26 @@ interface UserReport {
   }>;
 }
 
-export default function UserReportPage({ params }: { params: { userId: string } }) {
+export default function UserReportPage({ params }: { params: Promise<{ userId: string }> }) {
   const router = useRouter();
   const { isLoaded, isSignedIn } = useAuth();
   const [isAdmin, setIsAdmin] = useState(false);
   const [report, setReport] = useState<UserReport | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string>('');
+
+  useEffect(() => {
+    const initializePage = async () => {
+      const { userId: resolvedUserId } = await params;
+      setUserId(resolvedUserId);
+    };
+    initializePage();
+  }, [params]);
 
   useEffect(() => {
     const checkAuth = async () => {
-      if (!isLoaded) return;
+      if (!isLoaded || !userId) return;
 
       if (!isSignedIn) {
         router.push('/login');
@@ -63,7 +72,7 @@ export default function UserReportPage({ params }: { params: { userId: string } 
 
         setIsAdmin(true);
         // Fetch user report data
-        const reportResponse = await fetch(`/api/admin/reports/${params.userId}`);
+        const reportResponse = await fetch(`/api/admin/reports/${userId}`);
         if (!reportResponse.ok) {
           throw new Error('Failed to fetch report');
         }
@@ -78,7 +87,7 @@ export default function UserReportPage({ params }: { params: { userId: string } 
     };
 
     checkAuth();
-  }, [isLoaded, isSignedIn, router, params.userId]);
+  }, [isLoaded, isSignedIn, router, userId]);
 
   if (loading) {
     router.push('/loading');
