@@ -2,6 +2,7 @@
   "name": "colori-pro",
   "version": "0.1.0",
   "private": true,
+  "description": "ColoriAI - Seasonal Color Analysis App - Latest deployment with ESLint fixes",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
