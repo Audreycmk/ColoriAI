@@ -4,7 +4,6 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@clerk/nextjs';
-import Link from 'next/link';
 import TransitionWrapper from '@/components/TransitionWrapper';
 import Navigation from '@/components/Navigation';
 import '@/styles/style.css';
