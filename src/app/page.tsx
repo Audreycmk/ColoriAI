@@ -12,7 +12,6 @@ import '@/styles/style.css';
 export default function HomePage() {
   const router = useRouter();
   const { isLoaded, isSignedIn } = useAuth();
-  const [showLoginPopup] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
@@ -63,18 +62,6 @@ export default function HomePage() {
             {isAdmin ? 'Dashboard' : 'Find My Color'}
           </button>
         </div>
-
-        {/* Login Required Popup */}
-        {showLoginPopup && (
-          <div className="popup">
-            <div className="popup-content">
-              <p>Please log in to continue</p>
-              <Link href="/login">
-                <button className="login">Login</button>
-              </Link>
-            </div>
-          </div>
-        )}
       </div>
     </TransitionWrapper>
   );
