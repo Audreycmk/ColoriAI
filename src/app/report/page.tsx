@@ -832,12 +832,12 @@ export default function ReportPage() {
                 src={analysisData.outfit.generatedImage}
                 alt="Style Outfit"
                 width={320}
-                height={240}
+                height={140}
                 className="mx-auto rounded-lg mb-[50px] object-cover"
-                style={{ aspectRatio: '4/3' }}
+                style={{ aspectRatio: '16/7' }}
               />
             ) : (
-              <div className="w-[320px] h-[240px] mx-auto rounded-lg mb-[50px] bg-gray-100 flex items-center justify-center" style={{ aspectRatio: '4/3' }}>
+              <div className="w-[320px] h-[140px] mx-auto rounded-lg mb-[50px] bg-gray-100 flex items-center justify-center" style={{ aspectRatio: '16/7' }}>
                 <p className="text-gray-600 font-medium">Generating your outfit...</p>
               </div>
             )}

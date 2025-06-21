@@ -256,8 +256,8 @@ function ReportHistoryContent() {
                       <img
                         src={report.outfitImage}
                         alt="Outfit Preview"
-                        className="w-[240px] h-[180px] rounded mb-3 object-cover"
-                        style={{ transform: 'translateX(40%)', aspectRatio: '4/3' }}
+                        className="w-[240px] h-[80px] rounded mb-3 object-cover"
+                        style={{ transform: 'translateX(40%)', aspectRatio: '3/1' }}
                       />
                     )}
                   
