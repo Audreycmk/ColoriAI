@@ -79,9 +79,17 @@ export default function ReportDetailPage() {
   if (!report) return <div className="p-6 text-center">Loading report...</div>;
 
   return (
-    <div className="p-6 bg-[#FCF2DF] min-h-screen">
-      <div className="flex justify-between items-center mb-4">
-        <button onClick={() => router.back()} className="text-sm underline text-[#3c3334]">
+    <div className="p-6 pt-[5px] bg-[#FCF2DF] min-h-screen">
+      <div className="flex justify-between items-center mb-[30px] mt-[30px]">
+        <button 
+          onClick={() => router.back()} 
+          className="ml-[10px] px-[10px] py-[5px] border-none rounded-[13px] text-center font-quicksand text-[14px] font-medium uppercase tracking-[1.1px] transition-colors"
+          style={{
+            background: 'rgba(255, 210, 165, 0.70)',
+            boxShadow: '0px 4px 4px rgba(0, 0, 0, 0.10)',
+            color: '#827D76'
+          }}
+        >
           ← Back
         </button>
         
@@ -89,57 +97,64 @@ export default function ReportDetailPage() {
         <button
           onClick={handleDeleteReport}
           disabled={deleting}
-          className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+          className="mr-[10px] px-[10px] py-[5px] border-none rounded-[13px] text-center font-quicksand text-[14px] font-medium uppercase tracking-[1.1px] transition-colors disabled:opacity-50"
+          style={{
+            background: 'rgb(241 171 35)',
+            boxShadow: '0px 4px 4px rgba(0, 0, 0, 0.10)',
+            color: '#ffffff'
+          }}
         >
-          {deleting ? 'Deleting...' : 'Delete Report'}
+          {deleting ? 'Deleting...' : 'x Delete'}
         </button>
       </div>
 
       {/* Deleted indicator */}
       {report.isDeleted && (
-        <div className="mb-4 p-3 bg-gray-100 border border-gray-300 rounded-lg">
+        <div className="mb-4 p-3 bg-gray-100 border border-gray-300 rounded-lg text-center">
           <p className="text-sm text-gray-600">
             ⚠️ This report has been deleted and is only visible to administrators.
           </p>
         </div>
       )}
 
-      <h1 className="text-2xl font-bold mb-2">{report.result.seasonType}</h1>
-      <p className="text-sm text-gray-500 mb-4">
-        Created: {new Date(report.createdAt).toLocaleString()}
-      </p>
+      <div className="text-center">
+        <h1 className="text-2xl font-bold mb-2">{report.result.seasonType}</h1>
+        <p className="text-sm text-gray-500 mb-4">
+          Created: {new Date(report.createdAt).toLocaleString()}
+        </p>
 
-      {report.outfitImage && (
-        <img
-          src={report.outfitImage}
-          alt="Outfit"
-          className="w-full max-w-md mb-6 rounded shadow"
-        />
-      )}
+        {report.outfitImage && (
+          <img
+            src={report.outfitImage}
+            alt="Outfit"
+            className="w-full max-w-md mb-6 rounded shadow mx-auto"
+          />
+        )}
 
-      <div className="mb-8">
-        <h2 className="font-semibold mb-2">Color Extraction</h2>
-        <div className="flex flex-wrap gap-4">
-          {report.result.colorExtraction.map((c, i) => (
-            <div key={`${c.label}-${i}`} className="text-center">
-              <div className="w-[40px] h-[40px] rounded-full mx-auto" style={{ backgroundColor: c.hex }} />
-              <p className="text-xs">{c.label}</p>
-              <p className="text-xs">{c.hex}</p>
-            </div>
-          ))}
+        <div className="mb-8">
+          <h2 className="font-semibold mb-2">Color Extraction</h2>
+          <div className="flex flex-wrap gap-[8px] justify-center">
+            {report.result.colorExtraction.map((c, i) => (
+              <div key={`${c.label}-${i}`} className="text-center">
+                <div className="w-[40px] h-[40px] rounded-full mx-auto" style={{ backgroundColor: c.hex }} />
+                <p className="text-xs">{c.label}</p>
+                <p className="text-xs">{c.hex}</p>
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
 
-      <div className="mb-8">
-        <h2 className="font-semibold mb-2">Color Palette</h2>
-        <div className="grid grid-cols-3 gap-3 max-w-xs">
-          {report.result.colorPalette.map((c, i) => (
-            <div key={`${c.name}-${i}`} className="text-center">
-              <div className="w-[40px] h-[40px] rounded-sm mx-auto" style={{ backgroundColor: c.hex }} />
-              <p className="text-xs">{c.name}</p>
-              <p className="text-xs">{c.hex}</p>
-            </div>
-          ))}
+        <div className="mb-8">
+          <h2 className="font-semibold mb-2">Color Palette</h2>
+          <div className="grid grid-cols-3 gap-3 max-w-xs mx-auto">
+            {report.result.colorPalette.map((c, i) => (
+              <div key={`${c.name}-${i}`} className="text-center">
+                <div className="w-[40px] h-[40px] rounded-sm mx-auto" style={{ backgroundColor: c.hex }} />
+                <p className="text-xs">{c.name}</p>
+                <p className="text-xs">{c.hex}</p>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>

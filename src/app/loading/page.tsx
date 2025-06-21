@@ -197,14 +197,14 @@ export default function LoadingPage() {
   };
 
   return (
-    <div className="mobile-display">
+    <div className="mobile-display flex flex-col">
       <div className={styles.container}>
         <video
           autoPlay
           playsInline
           loop
           muted
-          className="w-full"
+          className="w-full h-full object-cover"
         >
           <source src="/Loading.mp4" type="video/mp4" />
         </video>
@@ -218,7 +218,10 @@ export default function LoadingPage() {
             />
           </div>
           <p className={styles.status}>
-            {progress < 50 ? 'Analyzing your seasonal colors...' :
+          {progress < 20 ? 'Sending your image to AI...' :
+          progress < 25 ? 'Extracting your colors from image...' :
+            progress < 50 ? 'Analyzing your seasonal colors...' :
+            progress < 70 ? 'Searching makeup products for you...' :
              progress < 80 ? 'Generating your personalized outfit...' :
              'Almost there...'}
           </p>

@@ -149,7 +149,7 @@ function ReportHistoryContent() {
 
   if (loading) {
     return (
-      <div className="mobile-display min-h-screen flex flex-col">
+      <div className="mobile-display h-[822px] flex flex-col">
         <div className="bg-[#FEDCB6] h-[202px] flex flex-col items-center justify-start px-4 pt-6 sticky top-0 z-10 flex-shrink-0">
           <div className="w-full flex justify-between items-center">
             <Link href="/">
@@ -168,7 +168,7 @@ function ReportHistoryContent() {
 
   if (error) {
     return (
-      <div className="mobile-display min-h-screen flex flex-col">
+      <div className="mobile-display h-[822px] flex flex-col">
         <div className="bg-[#FEDCB6] h-[202px] flex flex-col items-center justify-start px-4 pt-6 sticky top-0 z-10 flex-shrink-0">
           <div className="w-full flex justify-between items-center">
             <Link href="/">
@@ -186,7 +186,7 @@ function ReportHistoryContent() {
   }
 
   return (
-    <div className="mobile-display min-h-screen flex flex-col">
+    <div className="mobile-display h-[822px] flex flex-col">
       <div className="bg-[#FEDCB6] h-[202px] flex flex-col items-center justify-start px-4 pt-6 sticky top-0 z-10 flex-shrink-0">
         <div className="w-full flex justify-between items-center">
           <Link href={isAdmin && targetUserId ? "/admin" : "/"}>
@@ -215,19 +215,17 @@ function ReportHistoryContent() {
                     <button
                       onClick={() => handleDeleteReport(report._id)}
                       disabled={deletingReport === report._id}
-                      className="absolute top-2 px-3 py-1 text-white rounded-lg text-xs font-medium transition-colors disabled:opacity-50 z-10 cursor-pointer"
+                      className="absolute top-2 px-[10px] py-[5px] border-none rounded-[13px] text-center font-quicksand text-[14px] font-medium uppercase tracking-[1.1px] transition-colors disabled:opacity-50 z-10 cursor-pointer"
                       style={{
                         right: '8px',
                         marginTop: '60px',
-                        padding:'5px 20px',
-                        borderRadius: '20px',
-                        background: 'rgba(224, 175, 123, 0.70)',
-                        backdropFilter: 'blur(10px)',
-                        border: '1px solid rgba(255, 255, 255, 0.3)'
+                        background: 'rgb(241 171 35)',
+                        boxShadow: '0px 4px 4px rgba(0, 0, 0, 0.10)',
+                        color: '#ffffff'
                       }}
                       title="Delete Report"
                     >
-                      {deletingReport === report._id ? '...' : 'Delete'}
+                      {deletingReport === report._id ? '...' : 'x Delete'}
                     </button>
                   )}
 
@@ -356,7 +354,7 @@ function ReportHistoryContent() {
 export default function ReportHistoryPage() {
   return (
     <Suspense fallback={
-      <div className="mobile-display min-h-screen flex flex-col">
+      <div className="mobile-display h-[822px] flex flex-col">
         <div className="bg-[#FEDCB6] h-[202px] flex flex-col items-center justify-start px-4 pt-6 sticky top-0 z-10 flex-shrink-0">
           <div className="w-full flex justify-between items-center">
             <Link href="/">

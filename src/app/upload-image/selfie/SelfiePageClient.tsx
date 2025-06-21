@@ -85,7 +85,7 @@ export default function SelfiePageClient() {
   };
 
   return (
-    <div className="mobile-display">
+    <div className="mobile-display flex flex-col">
       <div
         className={`${styles.container} ${
           imageSrc ? styles.confirmBackground : styles.uploadBackground
