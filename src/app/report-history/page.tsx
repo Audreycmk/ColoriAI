@@ -1,7 +1,7 @@
 //src/app/report-history/page.tsx
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import styles from '../report/ReportPage.module.css';
@@ -24,7 +24,7 @@ interface Report {
   isDeleted?: boolean;
 }
 
-export default function ReportHistoryPage() {
+function ReportHistoryContent() {
   const searchParams = useSearchParams();
   const [reports, setReports] = useState<Report[]>([]);
   const [loading, setLoading] = useState(true);
@@ -350,5 +350,28 @@ export default function ReportHistoryPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function ReportHistoryPage() {
+  return (
+    <Suspense fallback={
+      <div className="mobile-display">
+        <div className="bg-[#FEDCB6] h-[202px] flex flex-col items-center justify-start px-4 pt-6 sticky top-0 z-10">
+          <div className="w-full flex justify-between items-center">
+            <Link href="/">
+              <div className={styles.back}>&lt;</div>
+            </Link>
+          </div>
+          <img src="/ColoriAI.png" alt="ColoriAI Logo" className={styles.logo} />
+          <p className={styles.seasonalColorReport}>My Reports</p>
+        </div>
+        <div className="p-6 text-[#3c3334] text-sm font-medium bg-[#FCF2DF] h-[calc(100vh-202px)] overflow-y-auto">
+          <p className="text-gray-500">Loading...</p>
+        </div>
+      </div>
+    }>
+      <ReportHistoryContent />
+    </Suspense>
   );
 }
