@@ -287,7 +287,7 @@ function ReportHistoryContent() {
               <div className="flex flex-col items-center gap-4 pb-6" style={{ marginBottom: '50px' }}>
                 {/* Page Info */}
                 <p className="text-sm text-gray-600">
-                  Page {currentPage} of {totalPages} • Showing {reports.length} total reports
+                  Page {currentPage} of {totalPages}  •  Showing {reports.length} total reports
                 </p>
                 
                 {/* Pagination Controls */}
@@ -295,31 +295,35 @@ function ReportHistoryContent() {
                   <button
                     onClick={goToPrevPage}
                     disabled={currentPage === 1}
-                    className="px-[10px] py-[7px] rounded-full text-sm font-medium transition-colors cursor-pointer"
+                    className="px-[20px] py-[15px] rounded-full text-sm font-medium transition-colors cursor-pointer"
                     style={{
                       background: 'rgba(224, 175, 123, 0.30)',
                       color: '#000000',
                       border: 'none',
-                      margin: '6px'
+                      margin: '15px'
                     }}
                   >
                     &lt;
                   </button>
                   
                   {/* Page Numbers */}
-                  <div className="flex gap-1" style={{ gap: '3px' }}>
+                  <div
+                    className="flex gap-1 overflow-x-auto whitespace-nowrap"
+                    style={{ gap: '20px', maxWidth: '200px' }}
+                  >
                     {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
                       <button
                         key={page}
                         onClick={() => goToPage(page)}
-                        className={`w-[30px] h-[30px] text-sm font-medium transition-colors cursor-pointer`}
+                        className={`w-[35px] h-[35px] text-sm font-medium transition-colors cursor-pointer inline-block`}
                         style={{
-                          background: page === currentPage 
-                            ? 'rgba(224, 175, 123, 1.0)' 
+                          background: page === currentPage
+                            ? 'rgba(224, 175, 123, 1.0)'
                             : 'rgba(224, 175, 123, 0.50)',
                           color: '#000000',
                           border: 'none',
                           borderRadius: '8px',
+                          minWidth: '35px',
                         }}
                       >
                         {page}
@@ -330,12 +334,12 @@ function ReportHistoryContent() {
                   <button
                     onClick={goToNextPage}
                     disabled={currentPage === totalPages}
-                    className="px-[10px] py-[7px] rounded-full text-sm font-medium transition-colors cursor-pointer"
+                    className="px-[20px] py-[15px] rounded-full text-sm font-medium transition-colors cursor-pointer"
                     style={{
                       background: 'rgba(224, 175, 123, 0.30)',
                       color: '#000000',
                       border: 'none',
-                      margin: '6px'
+                      margin: '15px'
                     }}
                   >
                     &gt;
