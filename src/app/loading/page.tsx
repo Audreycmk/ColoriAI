@@ -218,12 +218,24 @@ export default function LoadingPage() {
             />
           </div>
           <p className={styles.status}>
-          {progress < 20 ? 'Sending your image to AI...' :
-          progress < 25 ? 'Extracting your colors from image...' :
-            progress < 50 ? 'Analyzing your seasonal colors...' :
-            progress < 70 ? 'Searching makeup products for you...' :
-             progress < 80 ? 'Generating your personalized outfit...' :
-             'Almost there...'}
+            {progress < 20 ? (
+              <>
+                Sending your image to AI...<br />
+                <span style={{ marginTop: 10, fontSize: 12, letterSpacing: 1, display: 'inline-block' }}>10% Completed</span>
+              </>
+            ) : progress < 70 ? (
+              <>
+                Analyzing your seasonal colors...<br />
+                <span style={{ marginTop: 10, fontSize: 12, letterSpacing: 1, display: 'inline-block' }}>65% Completed</span>
+              </>
+            ) : progress < 90 ? (
+              <>
+                Generating your personalized outfit...<br />
+                <span style={{ marginTop: 10, fontSize: 12, letterSpacing: 1, display: 'inline-block' }}>80% Completed</span>
+              </>
+            ) : (
+              'Almost there...'
+            )}
           </p>
         </div>
       </div>

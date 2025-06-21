@@ -18,7 +18,7 @@
 
 .content {
   position: absolute;
-  top: 150px;
+  top: 145px;
   left: 50%;
   transform: translateX(-50%);
   z-index: 10;
@@ -31,10 +31,9 @@
 }
 
 .title {
-  font-size: 1.5rem;
-  padding: 20px;
+  font-size: 1.7rem;
   color: #333;
-  margin-bottom: 1rem;
+  margin-bottom: 2rem;
   text-align: center;
   font-weight: 600;
   white-space: nowrap;
@@ -57,8 +56,10 @@
 }
 
 .status {
-  font-size: 1rem;
+  font-size: 1.1rem;
   color: #ffffff;
+  letter-spacing: 1px;
   text-align: center;
   font-weight: 500;
+  margin-top: 20px;
 }

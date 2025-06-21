@@ -133,10 +133,10 @@ export default function ReportDetailPage() {
 
         <div className="mb-8">
           <h2 className="font-semibold mb-2">Color Extraction</h2>
-          <div className="flex flex-wrap gap-[8px] justify-center">
+          <div className="flex flex-wrap gap-[80px] justify-center">
             {report.result.colorExtraction.map((c, i) => (
               <div key={`${c.label}-${i}`} className="text-center">
-                <div className="w-[40px] h-[40px] rounded-full mx-auto" style={{ backgroundColor: c.hex }} />
+                <div className="w-[60px] h-[60px] rounded-full mx-auto" style={{ backgroundColor: c.hex }} />
                 <p className="text-xs">{c.label}</p>
                 <p className="text-xs">{c.hex}</p>
               </div>
@@ -149,7 +149,7 @@ export default function ReportDetailPage() {
           <div className="grid grid-cols-3 gap-3 max-w-xs mx-auto">
             {report.result.colorPalette.map((c, i) => (
               <div key={`${c.name}-${i}`} className="text-center">
-                <div className="w-[40px] h-[40px] rounded-sm mx-auto" style={{ backgroundColor: c.hex }} />
+                <div className="w-[50px] h-[50px] rounded-sm mx-auto" style={{ backgroundColor: c.hex, borderRadius: '5px' }} />
                 <p className="text-xs">{c.name}</p>
                 <p className="text-xs">{c.hex}</p>
               </div>

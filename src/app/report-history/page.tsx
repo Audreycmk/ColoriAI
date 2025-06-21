@@ -242,12 +242,12 @@ function ReportHistoryContent() {
                     style={{ textDecoration: 'none', color: 'black' }}
                   >
                     {/* Date */}
-                    <p className="text-xs text-gray-400 mb-1" style={{ marginLeft: '10px', marginBottom: '-8px' }}>
+                    <p className="text-xs text-gray-100 mb-[5px]" style={{ marginLeft: '10px'}}>
                       {new Date(report.createdAt).toLocaleDateString()} • {new Date(report.createdAt).toLocaleTimeString()}
                     </p>
 
                     {/* Title */}
-                    <h2 className="text-xl font-semibold text-[#3c3334] mb-2" style={{ marginLeft: '10px' }}>
+                    <h2 className="text-xl font-semibold text-[#3c3334]" style={{ marginLeft: '30px' }}>
                       {report.result.seasonType || 'Unknown Season Type'}
                     </h2>
 
@@ -256,8 +256,7 @@ function ReportHistoryContent() {
                       <img
                         src={report.outfitImage}
                         alt="Outfit Preview"
-                        className="w-[240px] h-[80px] rounded mb-3 object-cover"
-                        style={{ transform: 'translateX(40%)', aspectRatio: '3/1' }}
+                        className="w-[300px] h-[300px] m-[30px] flex flex-col items-center"
                       />
                     )}
                   
@@ -276,7 +275,7 @@ function ReportHistoryContent() {
 
                     {/* View Button */}
                     <div className="mt-4 text-right" style={{ marginTop: '20px' }}>
-                      <span className="text-sm text-blue-600 underline">View Full Report →</span>
+                      <span className="text-sm text-blue-600 underline mr-[20px]">View Full Report →</span>
                     </div>
                   </Link>
                 </div>
