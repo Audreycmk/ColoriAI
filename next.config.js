@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Force Vercel to rebuild from latest commit with ESLint fixes
+  // Force Vercel to rebuild from latest commit with Link import fix
   experimental: {
     // Enable experimental features if needed
   },
