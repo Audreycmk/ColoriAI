@@ -149,7 +149,7 @@ function ReportHistoryContent() {
 
   if (loading) {
     return (
-      <div className="mobile-display">
+      <div className="mobile-display min-h-screen">
         <div className="bg-[#FEDCB6] h-[202px] flex flex-col items-center justify-start px-4 pt-6 sticky top-0 z-10">
           <div className="w-full flex justify-between items-center">
             <Link href="/">
@@ -159,7 +159,7 @@ function ReportHistoryContent() {
           <img src="/ColoriAI.png" alt="ColoriAI Logo" className={styles.logo} />
           <p className={styles.seasonalColorReport}>{getPageTitle()}</p>
         </div>
-        <div className="p-6 text-[#3c3334] text-sm font-medium bg-[#FCF2DF] h-[calc(100vh-202px)] overflow-y-auto">
+        <div className="p-6 text-[#3c3334] text-sm font-medium bg-[#FCF2DF] min-h-[calc(100vh-202px)] overflow-y-auto flex items-center justify-center">
           <p className="text-gray-500">Loading reports...</p>
         </div>
       </div>
@@ -168,7 +168,7 @@ function ReportHistoryContent() {
 
   if (error) {
     return (
-      <div className="mobile-display">
+      <div className="mobile-display min-h-screen">
         <div className="bg-[#FEDCB6] h-[202px] flex flex-col items-center justify-start px-4 pt-6 sticky top-0 z-10">
           <div className="w-full flex justify-between items-center">
             <Link href="/">
@@ -178,7 +178,7 @@ function ReportHistoryContent() {
           <img src="/ColoriAI.png" alt="ColoriAI Logo" className={styles.logo} />
           <p className={styles.seasonalColorReport}>{getPageTitle()}</p>
         </div>
-        <div className="p-6 text-[#3c3334] text-sm font-medium bg-[#FCF2DF] h-[calc(100vh-202px)] overflow-y-auto">
+        <div className="p-6 text-[#3c3334] text-sm font-medium bg-[#FCF2DF] min-h-[calc(100vh-202px)] overflow-y-auto flex items-center justify-center">
           <p className="text-red-500">{error}</p>
         </div>
       </div>
@@ -186,8 +186,8 @@ function ReportHistoryContent() {
   }
 
   return (
-    <div className="mobile-display">
-      <div className="bg-[#FEDCB6] h-[202px] flex-1 flex-col items-center justify-start px-4 pt-6 sticky top-0 z-10">
+    <div className="mobile-display min-h-screen">
+      <div className="bg-[#FEDCB6] h-[202px] flex flex-col items-center justify-start px-4 pt-6 sticky top-0 z-10">
         <div className="w-full flex justify-between items-center">
           <Link href={isAdmin && targetUserId ? "/admin" : "/"}>
             <div className={styles.back}>&lt;</div>
@@ -197,9 +197,9 @@ function ReportHistoryContent() {
         <p className={styles.seasonalColorReport}>{getPageTitle()}</p>
       </div>
 
-      <div className="reports-content p-6 text-[#3c3334] text-sm font-medium bg-[#FCF2DF] h-[calc(100vh-470px)] overflow-y-auto">
+      <div className="reports-content p-6 text-[#3c3334] text-sm font-medium bg-[#FCF2DF] min-h-[calc(100vh-202px)] overflow-y-auto" style={{ paddingBottom: '50px' }}>
         {reports.length === 0 ? (
-          <div className="flex items-center justify-center h-full">
+          <div className="flex items-center justify-center min-h-[calc(100vh-202px-48px)]">
             <p className="text-gray-500">
               {targetUserId && isAdmin ? 'No reports found for this user.' : 'No reports saved yet.'}
             </p>
@@ -287,7 +287,7 @@ function ReportHistoryContent() {
 
             {/* Pagination - Show if there are more than 2 reports (more than 1 page) */}
             {reports.length > 2 && (
-              <div className="flex flex-col items-center gap-4 pb-6">
+              <div className="flex flex-col items-center gap-4 pb-6" style={{ marginBottom: '50px' }}>
                 {/* Page Info */}
                 <p className="text-sm text-gray-600">
                   Page {currentPage} of {totalPages} • Showing {reports.length} total reports
@@ -356,7 +356,7 @@ function ReportHistoryContent() {
 export default function ReportHistoryPage() {
   return (
     <Suspense fallback={
-      <div className="mobile-display">
+      <div className="mobile-display min-h-screen">
         <div className="bg-[#FEDCB6] h-[202px] flex flex-col items-center justify-start px-4 pt-6 sticky top-0 z-10">
           <div className="w-full flex justify-between items-center">
             <Link href="/">
@@ -366,7 +366,7 @@ export default function ReportHistoryPage() {
           <img src="/ColoriAI.png" alt="ColoriAI Logo" className={styles.logo} />
           <p className={styles.seasonalColorReport}>My Reports</p>
         </div>
-        <div className="p-6 text-[#3c3334] text-sm font-medium bg-[#FCF2DF] h-[calc(100vh-202px)] overflow-y-auto">
+        <div className="p-6 text-[#3c3334] text-sm font-medium bg-[#FCF2DF] min-h-[calc(100vh-202px)] overflow-y-auto flex items-center justify-center">
           <p className="text-gray-500">Loading...</p>
         </div>
       </div>
