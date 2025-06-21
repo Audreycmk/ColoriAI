@@ -17,7 +17,7 @@ const quicksand = Quicksand({
 });
 
 export const metadata = {
-  title: 'Colori PRO',
+  title: 'ColoriAI',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

@@ -112,16 +112,56 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const reports = await Report.find({ userId }).sort({ createdAt: -1 });
-    console.log(`📊 Reports API - Found ${reports.length} reports for user ${userId}`);
-    
-    // Ensure we always return an array
-    if (!Array.isArray(reports)) {
-      console.error('❌ Reports query did not return an array:', reports);
-      return NextResponse.json([], { status: 200 });
+    // Check if user is admin
+    const response = await fetch(`https://api.clerk.dev/v1/users/${userId}`, {
+      headers: {
+        'Authorization': `Bearer ${process.env.CLERK_SECRET_KEY}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    let isAdmin = false;
+    if (response.ok) {
+      const userData = await response.json();
+      isAdmin = userData.public_metadata?.role === 'admin';
     }
 
-    return NextResponse.json(reports);
+    // For regular users, only show non-deleted reports
+    // For admins, show all reports including deleted ones
+    const query = isAdmin 
+      ? { userId } 
+      : { 
+          userId, 
+          $or: [
+            { isDeleted: false },
+            { isDeleted: { $exists: false } }
+          ]
+        };
+
+    console.log('🔍 User ID:', userId);
+    console.log('🔍 Is Admin:', isAdmin);
+    console.log('🔍 Query:', JSON.stringify(query, null, 2));
+
+    // First, let's get ALL reports for this user to debug
+    const allReports = await Report.find({ userId }).sort({ createdAt: -1 });
+    console.log(`🔍 ALL reports for user ${userId}: ${allReports.length}`);
+    allReports.forEach((report, index) => {
+      console.log(`🔍 ALL Report ${index + 1}: ID=${report._id}, isDeleted=${report.isDeleted}, userId=${report.userId}`);
+    });
+
+    const reports = await Report.find(query).sort({ createdAt: -1 });
+    console.log(`📊 Reports API - Found ${reports.length} reports for user ${userId} (Admin: ${isAdmin})`);
+    
+    // Additional safety check - filter out any reports with isDeleted: true
+    const filteredReports = isAdmin ? reports : reports.filter(report => report.isDeleted !== true);
+    console.log(`📊 After safety filter: ${filteredReports.length} reports`);
+    
+    // Log each report's deletion status for debugging
+    filteredReports.forEach((report, index) => {
+      console.log(`📋 Report ${index + 1}: ID=${report._id}, isDeleted=${report.isDeleted}, userId=${report.userId}`);
+    });
+
+    return NextResponse.json(filteredReports);
   } catch (err) {
     console.error('❌ Error fetching reports:', err);
     return NextResponse.json([], { status: 200 }); // Return empty array instead of error

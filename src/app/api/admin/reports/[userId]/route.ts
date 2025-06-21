@@ -36,6 +36,7 @@ export async function GET(_: Request, { params }: { params: { userId: string } }
     }
 
     console.log(`✅ Admin reports API - Fetching reports for user ${params.userId}`);
+    // Admin can see all reports including deleted ones
     const reports = await Report.find({ userId: params.userId }).sort({ createdAt: -1 });
     console.log(`📊 Admin reports API - Found ${reports.length} reports for user ${params.userId}`);
     

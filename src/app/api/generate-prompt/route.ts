@@ -1,12 +1,6 @@
 import { NextResponse } from 'next/server';
 import { analyzeFace } from '@/lib/gemini';
 
-const DEMO_IMAGE_URL =
-  'https://res.cloudinary.com/dtxmgotbr/image/upload/v1750092887/colori/outfits/a1b98ghz1kjzqj2mbenq.png';
-
-// Whether to use actual image generation or demo image
-const ENABLE_IMAGE_GEN = process.env.ENABLE_IMAGE_GEN === 'true';
-
 export async function POST(req: Request) {
   const { imageBase64, age, style } = await req.json();
 
@@ -24,16 +18,7 @@ export async function POST(req: Request) {
     }
 
     // 🖼️ Step 2: Image generation logic
-    if (!ENABLE_IMAGE_GEN) {
-      console.log('🧪 Image generation disabled – using demo image');
-      return NextResponse.json({
-        result,
-        outfitImage: DEMO_IMAGE_URL,
-      });
-    }
-
-    // ✅ ENABLE_IMAGE_GEN is true — generate image with prompt
-    // Extract imagePrompt from the Gemini result (you likely store it or embed it in `result`)
+    // Extract imagePrompt from the Gemini result
     const promptMatch = result.match(/\*\*Image Prompt\*\*([\s\S]*?)```?/);
     const imagePrompt = promptMatch ? promptMatch[1].trim() : null;
 
@@ -41,12 +26,11 @@ export async function POST(req: Request) {
       console.warn('⚠️ No valid image prompt found in Gemini result.');
       return NextResponse.json({
         result,
-        outfitImage: DEMO_IMAGE_URL, // fallback
-        warning: 'Image prompt missing or too short, using demo image',
+        error: 'Image prompt missing or too short',
       });
     }
 
-    // 🔁 Call the image generation route directly (recommended: POST fetch to internal API)
+    // 🔁 Call the image generation route directly
     const imageGenResponse = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/generate-and-upload-image`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -56,11 +40,10 @@ export async function POST(req: Request) {
     const imageData = await imageGenResponse.json();
 
     if (!imageData?.imageUrl) {
-      console.warn('⚠️ Image generation failed, using demo image.');
+      console.warn('⚠️ Image generation failed.');
       return NextResponse.json({
         result,
-        outfitImage: DEMO_IMAGE_URL,
-        warning: 'Image generation failed, using demo image',
+        error: 'Image generation failed',
       });
     }
 
@@ -78,3 +61,4 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Gemini failed to analyze image' }, { status: 500 });
   }
 }
+

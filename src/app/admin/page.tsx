@@ -135,7 +135,18 @@ export default function AdminPage() {
         
         if (Array.isArray(usersData)) {
           console.log('Setting users:', usersData);
-          setUsers(usersData);
+          // Sort users: admin first, then by name
+          const sortedUsers = usersData.sort((a, b) => {
+            // First sort by role (admin first)
+            if (a.isAdmin && !b.isAdmin) return -1;
+            if (!a.isAdmin && b.isAdmin) return 1;
+            
+            // Then sort by name (firstName + lastName)
+            const nameA = `${a.firstName} ${a.lastName}`.toLowerCase();
+            const nameB = `${b.firstName} ${b.lastName}`.toLowerCase();
+            return nameA.localeCompare(nameB);
+          });
+          setUsers(sortedUsers);
         } else {
           console.error('Users data is not an array:', usersData);
           setError('Invalid users data format');
@@ -186,11 +197,11 @@ export default function AdminPage() {
   return (
     <div className="min-h-screen w-full bg-[#F5F5DC]">
       {/* Header */}
-      <header className="bg-white shadow">
+      <header className="bg-white shadow" style={{ marginLeft: '50px' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex justify-between items-center">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
+              <h1 className="text-3xl font-bold text-gray-900">Colori Admin Dashboard</h1>
               <p className="mt-1 text-sm text-gray-500">
                 Welcome back, {userName}
               </p>
@@ -199,6 +210,7 @@ export default function AdminPage() {
               <button
                 onClick={handleHomeClick}
                 className="px-4 py-2 text-sm text-gray-600 hover:text-gray-900"
+                style={{ marginRight: '50px' }}
               >
                 Home
               </button>
@@ -208,7 +220,7 @@ export default function AdminPage() {
       </header>
 
       {/* Main Content */}
-      <main className="max-w-7xl m-4 p-4 sm:px-6 lg:px-8 py-8">
+      <main className="max-w-7xl mx-auto px-8 py-8" style={{ marginLeft: '50px' }}>
     {/* Profile Card Modal */}
     {showProfile && selectedUser && (
       <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black bg-opacity-40">
@@ -225,7 +237,7 @@ export default function AdminPage() {
           </button>
 
           {/* Header */}
-          <div className="flex items-center space-x-4 mb-6">
+          <div className="flex items-center space-x-4 mb-6" style={{ marginLeft: '40px' }}>
             <Image
               src={selectedUser.imageUrl}
               alt="User Avatar"
@@ -240,9 +252,9 @@ export default function AdminPage() {
           </div>
 
           {/* Details */}
-          <div className="space-y-4">
+          <div className="space-y-4" style={{ marginLeft: '60px' }}>
             <div>
-              <p className="text-xs text-gray-500">Email</p>
+              <p className="text-xs text-gray-500 font-bold">Email</p>
               <p className="text-sm text-gray-900">{selectedUser.email}</p>
             </div>
             <div>
@@ -306,7 +318,7 @@ export default function AdminPage() {
               <tbody className="bg-white divide-y divide-gray-200">
                 {users && users.length > 0 ? (
                   users.map((user: UserData) => (
-                    <tr key={user.id} className="hover:bg-gray-50">
+                    <tr key={user.id} className="hover:bg-gray-50" style={{ marginBottom: '80px' }}>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
                           <div className="h-10 w-10 flex-shrink-0">
@@ -353,20 +365,25 @@ export default function AdminPage() {
                       <td className="px-6 py-4 whitespace-nowrap space-x-2">
                         {!user.isAdmin && (
                           <>
+                            <button
+                              onClick={() => handleViewProfile(user)}
+                              className="text-sm text-white bg-blue-500 hover:bg-blue-600 font-medium px-3 py-1 rounded"
+                              style={{ marginRight: '10px' }}
+                            >
+                              View Profile
+                            </button>
                             <Link href={`/report-history?userId=${user.id}`}>
-                              <button className="text-sm text-blue-600 hover:text-blue-900 font-medium">
+                              <button 
+                                className="text-sm text-white bg-blue-500 hover:bg-blue-600 font-medium px-3 py-1 rounded"
+                                style={{ marginRight: '10px' }}
+                              >
                                 View Reports
                               </button>
                             </Link>
                             <button
-                              onClick={() => handleViewProfile(user)}
-                              className="text-sm text-blue-600 hover:text-blue-900 font-medium"
-                            >
-                              View Profile
-                            </button>
-                            <button
                               onClick={() => setUserAsAdmin(user.id)}
-                              className="text-sm text-green-600 hover:text-green-900 font-medium"
+                              className="text-sm text-white bg-green-500 hover:bg-green-600 font-medium px-3 py-1 rounded"
+                              style={{ marginRight: '10px' }}
                             >
                               Make Admin
                             </button>
@@ -375,7 +392,7 @@ export default function AdminPage() {
                                 setSelectedUser(user);
                                 setShowDeleteModal(true);
                               }}
-                              className="text-sm text-red-600 hover:text-red-900 font-medium"
+                              className="text-sm text-white bg-red-500 hover:bg-red-600 font-medium px-3 py-1 rounded"
                             >
                               Delete
                             </button>
@@ -384,7 +401,7 @@ export default function AdminPage() {
                         {user.isAdmin && (
                           <button
                             onClick={() => handleViewProfile(user)}
-                            className="text-sm text-blue-600 hover:text-blue-900 font-medium"
+                            className="text-sm text-white bg-blue-500 hover:bg-blue-600 font-medium px-3 py-1 rounded"
                           >
                             View Profile
                           </button>

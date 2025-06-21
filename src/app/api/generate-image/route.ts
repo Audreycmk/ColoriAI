@@ -1,53 +1,80 @@
-// src/app/api/generate-image/route.ts
 import { NextResponse } from 'next/server';
-import { OpenAI } from 'openai';
+import { analyzeFace } from '@/lib/gemini';
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+const DEMO_IMAGE_URL =
+  'https://res.cloudinary.com/dtxmgotbr/image/upload/v1750092887/colori/outfits/a1b98ghz1kjzqj2mbenq.png';
+
+// Whether to use actual image generation or demo image
+const ENABLE_IMAGE_GEN = process.env.ENABLE_IMAGE_GEN === 'true';
 
 export async function POST(req: Request) {
+  const { imageBase64, age, style } = await req.json();
+
+  if (!imageBase64) {
+    return NextResponse.json({ error: 'No image provided' }, { status: 400 });
+  }
+
   try {
-    const { imagePrompt } = await req.json();
+    // 🧠 Step 1: Gemini analysis
+    const result = await analyzeFace(imageBase64, age, style);
+
+    const hasSeasonalData = result.match(/\*\*Seasonal Color Type:\*\*/i);
+    if (!hasSeasonalData) {
+      throw new Error(`Missing required color analysis sections. Gemini result: ${result}`);
+    }
+
+    // 🖼️ Step 2: Image generation logic
+    if (!ENABLE_IMAGE_GEN) {
+      console.log('🧪 Image generation disabled – using demo image');
+      return NextResponse.json({
+        result,
+        outfitImage: DEMO_IMAGE_URL,
+      });
+    }
+
+    // ✅ ENABLE_IMAGE_GEN is true — generate image with prompt
+    // Extract imagePrompt from the Gemini result (you likely store it or embed it in `result`)
+    const promptMatch = result.match(/\*\*Image Prompt\*\*([\s\S]*?)```?/);
+    const imagePrompt = promptMatch ? promptMatch[1].trim() : null;
 
     if (!imagePrompt || imagePrompt.length < 10) {
-      console.warn('⚠️ Invalid or short prompt:', imagePrompt);
-      return NextResponse.json(
-        { error: 'Image prompt is missing or too short' },
-        { status: 400 }
-      );
+      console.warn('⚠️ No valid image prompt found in Gemini result.');
+      return NextResponse.json({
+        result,
+        outfitImage: DEMO_IMAGE_URL, // fallback
+        warning: 'Image prompt missing or too short, using demo image',
+      });
     }
 
-    console.log('🎨 Prompt received:', imagePrompt);
-
-    const imageResponse = await openai.images.generate({
-      model: 'dall-e-3',
-      prompt: imagePrompt,
-      n: 1,
-      size: '1024x1792',
-      response_format: 'b64_json',
+    // 🔁 Call the image generation route directly (recommended: POST fetch to internal API)
+    const imageGenResponse = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/generate-and-upload-image`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ imagePrompt }),
     });
 
-    console.log('🧠 Full OpenAI response:', JSON.stringify(imageResponse, null, 2));
+    const imageData = await imageGenResponse.json();
 
-    const imageBase64 = imageResponse?.data?.[0]?.b64_json;
-
-    if (!imageBase64 || typeof imageBase64 !== 'string') {
-      return NextResponse.json(
-        { error: 'Failed to generate a valid image' },
-        { status: 500 }
-      );
+    if (!imageData?.imageUrl) {
+      console.warn('⚠️ Image generation failed, using demo image.');
+      return NextResponse.json({
+        result,
+        outfitImage: DEMO_IMAGE_URL,
+        warning: 'Image generation failed, using demo image',
+      });
     }
 
-    return NextResponse.json({ imageBase64 });
-  } catch (error: any) {
-    console.error('❌ Image generation error:', error?.message || error);
-
-    if (error?.response?.data) {
-      console.error('📦 OpenAI error response:', JSON.stringify(error.response.data, null, 2));
+    // ✅ Return full response
+    return NextResponse.json({
+      result,
+      outfitImage: imageData.imageUrl,
+    });
+  } catch (err: unknown) {
+    if (err instanceof Error) {
+      console.error('❌ Gemini error:', err.message);
+    } else {
+      console.error('❌ Gemini error:', err);
     }
-
-    return NextResponse.json(
-      { error: 'Image generation failed. See logs for details.' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Gemini failed to analyze image' }, { status: 500 });
   }
 }

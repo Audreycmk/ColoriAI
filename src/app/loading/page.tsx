@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@clerk/nextjs';
 import styles from './LoadingPage.module.css';
@@ -9,10 +9,19 @@ export default function LoadingPage() {
   const router = useRouter();
   const { user } = useUser();
   const [progress, setProgress] = useState(0);
+  const hasProcessed = useRef(false);
 
   useEffect(() => {
+    // Prevent multiple executions
+    if (hasProcessed.current) {
+      return;
+    }
+
     const processImage = async () => {
       try {
+        // Mark as processed to prevent duplicate executions
+        hasProcessed.current = true;
+
         // Get stored data
         const imageSrc = localStorage.getItem('pendingImageAnalysis');
         const age = localStorage.getItem('pendingAge');
@@ -38,8 +47,9 @@ export default function LoadingPage() {
           throw new Error('Gemini analysis failed');
         }
 
-        const { result } = await promptRes.json();
+        const { result, outfitImage } = await promptRes.json();
         console.log('Gemini Response:', result);
+        console.log('Outfit Image from API:', outfitImage);
         setProgress(50);
         
         // Remove URLs from the result before storing
@@ -48,26 +58,37 @@ export default function LoadingPage() {
         console.log('📝 Report saved to localStorage');
 
         // Step 2: DALL-E Image Generation (50-100%)
-        const match = cleanedResult.match(/\*\*Image Prompt:\*\*\s*(.+)/);
-        const imagePrompt = match?.[1]?.trim();
+        let generatedImageUrl = outfitImage || '';
+        
+        // If no outfit image from API, generate one
+        if (!outfitImage) {
+          const match = cleanedResult.match(/\*\*Image Prompt:\*\*\s*(.+)/);
+          const imagePrompt = match?.[1]?.trim();
 
-        let generatedImageUrl = '';
-        if (imagePrompt && imagePrompt.length >= 10) {
-          setProgress(60);
-          const imageGenRes = await fetch('/api/generate-and-upload-image', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ imagePrompt }),
-          });
+          if (imagePrompt && imagePrompt.length >= 10) {
+            setProgress(60);
+            const imageGenRes = await fetch('/api/generate-and-upload-image', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ imagePrompt }),
+            });
 
-          if (imageGenRes.ok) {
-            const { imageUrl } = await imageGenRes.json();
-            generatedImageUrl = imageUrl;
-            console.log('🏞️ Generated Image URL:', imageUrl);
-            localStorage.setItem('generatedImageUrl', imageUrl);
-            console.log('🖼️ Image URL saved to localStorage');
-            setProgress(100);
+            if (imageGenRes.ok) {
+              const { imageUrl } = await imageGenRes.json();
+              generatedImageUrl = imageUrl;
+              console.log('🏞️ Generated Image URL:', imageUrl);
+              localStorage.setItem('generatedImageUrl', imageUrl);
+              localStorage.setItem('generatedOutfitImage', imageUrl);
+              console.log('🖼️ Image URL saved to localStorage');
+              setProgress(100);
+            }
           }
+        } else {
+          // Use the outfitImage from the API response
+          console.log('🏞️ Using outfit image from API:', outfitImage);
+          localStorage.setItem('generatedImageUrl', outfitImage);
+          localStorage.setItem('generatedOutfitImage', outfitImage);
+          setProgress(100);
         }
 
         // Step 3: Save to Database (if user is signed in)
@@ -120,7 +141,7 @@ export default function LoadingPage() {
     };
 
     processImage();
-  }, [router, user]);
+  }, [router, user?.id]); // Only depend on user.id instead of the entire user object
 
   // Helper function to parse report data into structured format
   const parseReportData = (reportText: string) => {

@@ -3,29 +3,29 @@ import { NextResponse } from 'next/server';
 
 export async function GET() {
   try {
-    const { userId } = auth();
+    const { userId } = await auth();
 
     if (!userId) {
-      return new NextResponse('Unauthorized', { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     // Check if the current user is an admin
-    const response = await fetch(`${process.env.NEXT_PUBLIC_CLERK_API_URL}/users/${userId}`, {
+    const response = await fetch(`https://api.clerk.dev/v1/users/${userId}`, {
       headers: {
-        Authorization: `Bearer ${process.env.CLERK_SECRET_KEY}`,
+        'Authorization': `Bearer ${process.env.CLERK_SECRET_KEY}`,
         'Content-Type': 'application/json',
       },
     });
 
     if (!response.ok) {
-      throw new Error('Failed to fetch user data');
+      return NextResponse.json({ error: 'Failed to fetch user data' }, { status: 403 });
     }
 
     const userData = await response.json();
-    const isAdmin = userData.publicMetadata?.role === 'admin';
+    const isAdmin = userData.public_metadata?.role === 'admin';
 
     if (!isAdmin) {
-      return new NextResponse('Unauthorized', { status: 401 });
+      return NextResponse.json({ error: 'Admin access required' }, { status: 403 });
     }
 
     // TODO: Replace this with actual database query
@@ -48,6 +48,6 @@ export async function GET() {
     return NextResponse.json(mockReports);
   } catch (error) {
     console.error('Error in reports API:', error);
-    return new NextResponse('Internal Server Error', { status: 500 });
+    return NextResponse.json({ error: 'Server error' }, { status: 500 });
   }
 } 

@@ -21,6 +21,7 @@ interface Report {
   };
   outfitImage: string;
   createdAt: string;
+  isDeleted?: boolean;
 }
 
 export default function ReportHistoryPage() {
@@ -32,6 +33,7 @@ export default function ReportHistoryPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [isAdmin, setIsAdmin] = useState(false);
   const [targetUserId, setTargetUserId] = useState<string | null>(null);
+  const [deletingReport, setDeletingReport] = useState<string | null>(null);
   const reportsPerPage = 2; // Show 2 reports per page
 
   useEffect(() => {
@@ -84,6 +86,33 @@ export default function ReportHistoryPage() {
   
     checkAdminAndFetchReports();
   }, [searchParams]);  
+
+  const handleDeleteReport = async (reportId: string) => {
+    if (!confirm('Are you sure you want to delete this report? This action cannot be undone.')) {
+      return;
+    }
+
+    setDeletingReport(reportId);
+    try {
+      const res = await fetch(`/api/delete-report/${reportId}`, {
+        method: 'DELETE',
+      });
+
+      if (res.ok) {
+        // Remove the report from the local state
+        setReports(prevReports => prevReports.filter(report => report._id !== reportId));
+        console.log('🗑️ Report deleted successfully');
+      } else {
+        console.error('❌ Failed to delete report');
+        alert('Failed to delete report. Please try again.');
+      }
+    } catch (error) {
+      console.error('❌ Error deleting report:', error);
+      alert('Error deleting report. Please try again.');
+    } finally {
+      setDeletingReport(null);
+    }
+  };
 
   // Calculate pagination
   const totalPages = Math.ceil(reports.length / reportsPerPage);
@@ -181,48 +210,79 @@ export default function ReportHistoryPage() {
             {/* Reports Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">
               {currentReports.map((report) => (
-                <Link
-                  key={report._id}
-                  href={`/report-history/${report._id}${targetUserId && isAdmin ? `?userId=${targetUserId}` : ''}`}
-                  className="block bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow p-4"
-                >
-                  {/* Date */}
-                  <p className="text-xs text-gray-400 mb-2">
-                    {new Date(report.createdAt).toLocaleDateString()} • {new Date(report.createdAt).toLocaleTimeString()}
-                  </p>
-
-                  {/* Title */}
-                  <h2 className="text-lg font-semibold text-[#3c3334] mb-2">
-                    {report.result.seasonType || 'Unknown Season Type'}
-                  </h2>
-
-                  {/* Outfit Image */}
-                  {report.outfitImage && (
-                    <img
-                      src={report.outfitImage}
-                      alt="Outfit Preview"
-                      className="w-full h-48 object-cover rounded mb-3"
-                    />
+                <div key={report._id} className="relative bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow p-4" style={{ marginBottom: '50px' }}>
+                  {/* Delete Button - Only show for non-admin users or when admin is viewing their own reports */}
+                  {(!isAdmin || (isAdmin && !targetUserId)) && (
+                    <button
+                      onClick={() => handleDeleteReport(report._id)}
+                      disabled={deletingReport === report._id}
+                      className="absolute top-2 px-3 py-1 text-white rounded-lg text-xs font-medium transition-colors disabled:opacity-50 z-10 cursor-pointer"
+                      style={{
+                        right: '8px',
+                        marginTop: '60px',
+                        padding:'5px 20px',
+                        borderRadius: '20px',
+                        background: 'rgba(224, 175, 123, 0.70)',
+                        backdropFilter: 'blur(10px)',
+                        border: '1px solid rgba(255, 255, 255, 0.3)'
+                      }}
+                      title="Delete Report"
+                    >
+                      {deletingReport === report._id ? '...' : 'Delete'}
+                    </button>
                   )}
 
-                  {/* Color Palette */}
-                  <div className="flex gap-2 flex-wrap">
-                    {report.result.colorPalette.slice(0, 6).map((color, i) => (
-                      <div key={`${color.name}-${i}`} className="flex flex-col items-center text-center text-xs">
-                        <div
-                          className="w-[30px] h-[30px] rounded-full border"
-                          style={{ backgroundColor: color.hex }}
-                        />
-                        <span className="mt-1">{color.name}</span>
-                      </div>
-                    ))}
-                  </div>
+                  {/* Deleted indicator for admin view */}
+                  {isAdmin && report.isDeleted && (
+                    <div className="absolute top-2 left-2 bg-gray-500 text-white px-2 py-1 rounded text-xs">
+                      DELETED
+                    </div>
+                  )}
 
-                  {/* View Button */}
-                  <div className="mt-4 text-right">
-                    <span className="text-sm text-blue-600 underline">View Full Report →</span>
-                  </div>
-                </Link>
+                  <Link
+                    href={`/report-history/${report._id}${targetUserId && isAdmin ? `?userId=${targetUserId}` : ''}`}
+                    className="block"
+                    style={{ textDecoration: 'none', color: 'black' }}
+                  >
+                    {/* Date */}
+                    <p className="text-xs text-gray-400 mb-1" style={{ marginLeft: '10px', marginBottom: '-8px' }}>
+                      {new Date(report.createdAt).toLocaleDateString()} • {new Date(report.createdAt).toLocaleTimeString()}
+                    </p>
+
+                    {/* Title */}
+                    <h2 className="text-xl font-semibold text-[#3c3334] mb-2" style={{ marginLeft: '10px' }}>
+                      {report.result.seasonType || 'Unknown Season Type'}
+                    </h2>
+
+                     {/* Outfit Image */}
+                    {report.outfitImage && (
+                      <img
+                        src={report.outfitImage}
+                        alt="Outfit Preview"
+                        className="w-[200px] h-[320px] rounded mb-3"
+                        style={{ transform: 'translateX(40%)' }}
+                      />
+                    )}
+                  
+                    {/* Color Palette */}
+                    <div className="grid grid-cols-3 gap-1" style={{ marginLeft: '10px', marginTop: '10px', gap: '3px' }}>
+                      {report.result.colorPalette.slice(0, 6).map((color, i) => (
+                        <div key={`${color.name}-${i}`} className="flex flex-col items-center text-center text-xs">
+                          <div
+                            className="w-[30px] h-[30px] rounded-full"
+                            style={{ backgroundColor: color.hex }}
+                          />
+                          <span className="mt-1">{color.name}</span>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* View Button */}
+                    <div className="mt-4 text-right" style={{ marginTop: '20px' }}>
+                      <span className="text-sm text-blue-600 underline">View Full Report →</span>
+                    </div>
+                  </Link>
+                </div>
               ))}
             </div>
 
@@ -235,30 +295,36 @@ export default function ReportHistoryPage() {
                 </p>
                 
                 {/* Pagination Controls */}
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2" style={{ gap: '3px' }}>
                   <button
                     onClick={goToPrevPage}
                     disabled={currentPage === 1}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                      currentPage === 1
-                        ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                        : 'bg-[#FEDCB6] text-[#3c3334] hover:bg-[#FEDCB6]/80'
-                    }`}
+                    className="px-[10px] py-[7px] rounded-full text-sm font-medium transition-colors cursor-pointer"
+                    style={{
+                      background: 'rgba(224, 175, 123, 0.30)',
+                      color: '#000000',
+                      border: 'none',
+                      margin: '6px'
+                    }}
                   >
-                    Previous
+                    &lt;
                   </button>
                   
                   {/* Page Numbers */}
-                  <div className="flex gap-1">
+                  <div className="flex gap-1" style={{ gap: '3px' }}>
                     {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
                       <button
                         key={page}
                         onClick={() => goToPage(page)}
-                        className={`w-8 h-8 rounded-lg text-sm font-medium transition-colors ${
-                          page === currentPage
-                            ? 'bg-[#3c3334] text-white'
-                            : 'bg-gray-200 text-[#3c3334] hover:bg-gray-300'
-                        }`}
+                        className={`w-[30px] h-[30px] text-sm font-medium transition-colors cursor-pointer`}
+                        style={{
+                          background: page === currentPage 
+                            ? 'rgba(224, 175, 123, 1.0)' 
+                            : 'rgba(224, 175, 123, 0.50)',
+                          color: '#000000',
+                          border: 'none',
+                          borderRadius: '8px',
+                        }}
                       >
                         {page}
                       </button>
@@ -268,13 +334,15 @@ export default function ReportHistoryPage() {
                   <button
                     onClick={goToNextPage}
                     disabled={currentPage === totalPages}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                      currentPage === totalPages
-                        ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                        : 'bg-[#FEDCB6] text-[#3c3334] hover:bg-[#FEDCB6]/80'
-                    }`}
+                    className="px-[10px] py-[7px] rounded-full text-sm font-medium transition-colors cursor-pointer"
+                    style={{
+                      background: 'rgba(224, 175, 123, 0.30)',
+                      color: '#000000',
+                      border: 'none',
+                      margin: '6px'
+                    }}
                   >
-                    Next
+                    &gt;
                   </button>
                 </div>
               </div>
