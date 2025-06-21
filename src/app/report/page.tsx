@@ -837,13 +837,13 @@ export default function ReportPage() {
                 style={{ aspectRatio: '16/7' }}
               />
             ) : (
-              <div className="w-[320px] h-[140px] mx-auto rounded-lg mb-[50px] bg-gray-100 flex items-center justify-center" style={{ aspectRatio: '16/7' }}>
+              <div className="w-[320px] h-[320px] mx-auto rounded-lg mb-[50px] bg-gray-100 flex items-center justify-center">
                 <p className="text-gray-600 font-medium">Generating your outfit...</p>
               </div>
             )}
             {analysisData.outfit.imagePrompt && (
               <div className="m-[20px] mb-[50px] text-sm">
-                <p className="font-black">Outfit Guide:</p> 
+                <p className="font-black">Outfit Description:</p> 
                 <p>{analysisData.outfit.imagePrompt}</p>
               </div>
             )}
