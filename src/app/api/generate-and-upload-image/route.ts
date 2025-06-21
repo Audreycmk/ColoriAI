@@ -37,56 +37,50 @@ export async function POST(req: Request) {
 
     console.log('🎨 Generating image with prompt:', imagePrompt);
 
-    // Generate image using DALL-E
-    const imageResponse = await openai.images.generate({
-      model: 'dall-e-3',
+    const response = await openai.images.generate({
+      model: "dall-e-3",
       prompt: imagePrompt,
       n: 1,
-      size: '1024x1792',
-      response_format: 'b64_json',
+      size: "1024x1024",
     });
 
-    const imageBase64 = imageResponse?.data?.[0]?.b64_json;
-
-    if (!imageBase64 || typeof imageBase64 !== 'string') {
-      console.error('❌ Invalid image response from DALL-E:', imageResponse);
-      return NextResponse.json(
-        { error: 'Failed to generate a valid image' },
-        { status: 500 }
-      );
+    if (!response.data || response.data.length === 0) {
+      throw new Error('No image generated');
     }
 
-    // Convert base64 to buffer
-    const buffer = Buffer.from(imageBase64, 'base64');
+    const imageUrl = response.data[0].url;
+    if (!imageUrl) {
+      throw new Error('No image URL in response');
+    }
 
     // Upload to Cloudinary
-    const uploadResult = await new Promise((resolve, reject) => {
-      cloudinary.v2.uploader.upload_stream(
-        { folder: 'colori/outfits' },
-        (error, result) => {
-          if (error) {
-            console.error('❌ Cloudinary upload error:', error);
-            return reject(error);
-          }
-          resolve(result);
-        }
-      ).end(buffer);
-    });
+    const uploadResponse = await fetch(imageUrl);
+    const imageBuffer = await uploadResponse.arrayBuffer();
 
-    // @ts-ignore
-    const imageUrl = uploadResult.secure_url;
+    // Convert to base64 for Cloudinary
+    const base64Image = Buffer.from(imageBuffer).toString('base64');
+    const dataURI = `data:image/png;base64,${base64Image}`;
 
-    console.log('✅ Image uploaded to Cloudinary:', imageUrl);
+    const formData = new FormData();
+    formData.append('file', dataURI);
+    formData.append('upload_preset', process.env.CLOUDINARY_UPLOAD_PRESET || 'colori');
 
-    return NextResponse.json({ imageUrl });
-  } catch (error: any) {
-    console.error('❌ Error in generate-and-upload-image:', error?.message || error);
-    if (error?.response?.data) {
-      console.error('OpenAI API error details:', error.response.data);
-    }
-    return NextResponse.json(
-      { error: 'Failed to generate and upload image: ' + (error?.message || 'Unknown error') },
-      { status: 500 }
+    const cloudinaryResponse = await fetch(
+      `https://api.cloudinary.com/v1_1/${process.env.CLOUDINARY_CLOUD_NAME}/image/upload`,
+      {
+        method: 'POST',
+        body: formData,
+      }
     );
+
+    const cloudinaryData: { secure_url: string } = await cloudinaryResponse.json();
+
+    console.log('✅ Image uploaded to Cloudinary:', cloudinaryData.secure_url);
+
+    return NextResponse.json({ imageUrl: cloudinaryData.secure_url });
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.error('❌ Error in generate-and-upload-image:', errorMessage);
+    return NextResponse.json({ error: 'Failed to generate image' }, { status: 500 });
   }
 } 

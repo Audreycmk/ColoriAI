@@ -29,7 +29,7 @@ export async function POST(req: Request) {
       ).end(buffer);
     });
 
-    // @ts-ignore
+    // @ts-expect-error - Cloudinary result type is not fully typed
     return NextResponse.json({ imageUrl: result.secure_url });
   } catch (err) {
     console.error('❌ Cloudinary Upload Error:', err);

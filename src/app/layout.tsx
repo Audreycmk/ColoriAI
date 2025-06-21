@@ -2,13 +2,7 @@
 import './globals.css';
 import { Quicksand } from 'next/font/google';
 import PageWrapper from '@/components/PageWrapper';
-import {
-  ClerkProvider,
-  SignInButton,
-  SignUpButton,
-  SignedIn,
-  SignedOut,
-} from '@clerk/nextjs';
+import { ClerkProvider } from '@clerk/nextjs';
 
 const quicksand = Quicksand({
   subsets: ['latin'],

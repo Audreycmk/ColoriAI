@@ -35,7 +35,7 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
     }
 
     return NextResponse.json(report);
-  } catch (err) {
-    return NextResponse.json({ error: 'Server error' }, { status: 500 });
+  } catch {
+    return NextResponse.json({ error: 'Report not found' }, { status: 404 });
   }
 } 

@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth, useClerk } from '@clerk/nextjs';
+import { useAuth } from '@clerk/nextjs';
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -21,8 +21,7 @@ interface UserData {
 
 export default function AdminPage() {
   const router = useRouter();
-  const { userId, isLoaded, isSignedIn } = useAuth();
-  const { openUserProfile } = useClerk();
+  const { isLoaded, isSignedIn } = useAuth();
   const [users, setUsers] = useState<UserData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
