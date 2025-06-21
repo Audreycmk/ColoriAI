@@ -3,7 +3,10 @@ import connectToDatabase from '@/lib/mongodb';
 import Report from '@/models/Report';
 import { auth } from '@clerk/nextjs/server';
 
-export async function GET(_: Request, { params }: { params: { userId: string } }) {
+export async function GET(
+  _: Request, 
+  { params }: { params: Promise<{ userId: string }> }
+) {
   try {
     await connectToDatabase();
 
@@ -35,10 +38,11 @@ export async function GET(_: Request, { params }: { params: { userId: string } }
       return NextResponse.json({ error: 'Unauthorized - Admin access required' }, { status: 401 });
     }
 
-    console.log(`✅ Admin reports API - Fetching reports for user ${params.userId}`);
+    const { userId } = await params;
+    console.log(`✅ Admin reports API - Fetching reports for user ${userId}`);
     // Admin can see all reports including deleted ones
-    const reports = await Report.find({ userId: params.userId }).sort({ createdAt: -1 });
-    console.log(`📊 Admin reports API - Found ${reports.length} reports for user ${params.userId}`);
+    const reports = await Report.find({ userId }).sort({ createdAt: -1 });
+    console.log(`📊 Admin reports API - Found ${reports.length} reports for user ${userId}`);
     
     return NextResponse.json(reports);
   } catch (err) {

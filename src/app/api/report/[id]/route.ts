@@ -3,7 +3,7 @@ import { auth } from '@clerk/nextjs/server';
 import connectToDatabase from '@/lib/mongodb';
 import Report from '@/models/Report';
 
-export async function GET(req: Request, { params }: { params: { id: string } }) {
+export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     await connectToDatabase();
     const { userId } = await auth();
@@ -23,7 +23,8 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
       isAdmin = userData.public_metadata?.role === 'admin';
     }
 
-    const report = await Report.findById(params.id);
+    const { id } = await params;
+    const report = await Report.findById(id);
     if (!report || report.userId !== userId) {
       return NextResponse.json({ error: 'Not found' }, { status: 404 });
     }
