@@ -61,28 +61,43 @@ export default function LoadingPage() {
         
         // Extract image prompt and generate outfit image
         const match = cleanedResult.match(/\*\*Image Prompt:\*\*\s*(.+)/);
-        const imagePrompt = match?.[1]?.trim();
+        let imagePrompt = match?.[1]?.trim();
+
+        // Clean up the prompt to show only the outfit items
+        if (imagePrompt) {
+          // Remove common prefixes like "Flatlay of...", "A formal outfit for...", etc.
+          imagePrompt = imagePrompt.replace(/^(flatlay of|a\s+\w+\s+outfit for|an?\s+\w+\s+outfit for)\s+/i, '');
+          imagePrompt = imagePrompt.replace(/^.*?including\s+exactly\s+\d+\s+items?:\s*/i, '');
+          imagePrompt = imagePrompt.replace(/^.*?with\s+\d+\s+items?:\s*/i, '');
+          
+          // Remove any remaining prefixes that might contain age or style info
+          imagePrompt = imagePrompt.replace(/^.*?for\s+a\s+person\s+age\s+\d+[-\d]*\s*years?\s*old\s*:\s*/i, '');
+          imagePrompt = imagePrompt.replace(/^.*?for\s+an?\s+\d+[-\d]*\s*year\s*old\s*:\s*/i, '');
+          
+          // Clean up any remaining colons and extra spaces
+          imagePrompt = imagePrompt.replace(/^:\s*/, '').trim();
+        }
 
         if (imagePrompt && imagePrompt.length >= 10) {
           setProgress(60);
           console.log('🎨 Generating image with prompt:', imagePrompt);
           
           try {
-            const imageGenRes = await fetch('/api/generate-and-upload-image', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ imagePrompt }),
-            });
+          const imageGenRes = await fetch('/api/generate-and-upload-image', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ imagePrompt }),
+          });
 
-            if (imageGenRes.ok) {
+          if (imageGenRes.ok) {
               const imageData = await imageGenRes.json();
               if (imageData.imageUrl) {
                 generatedImageUrl = imageData.imageUrl;
                 console.log('🏞️ Generated Image URL:', imageData.imageUrl);
                 localStorage.setItem('generatedImageUrl', imageData.imageUrl);
                 localStorage.setItem('generatedOutfitImage', imageData.imageUrl);
-                console.log('🖼️ Image URL saved to localStorage');
-                setProgress(100);
+            console.log('🖼️ Image URL saved to localStorage');
+            setProgress(100);
               } else {
                 console.error('❌ No image URL in response:', imageData);
                 generatedImageUrl = '/outfit-demo.png'; // Fallback image

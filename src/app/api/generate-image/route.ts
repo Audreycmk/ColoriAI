@@ -35,7 +35,7 @@ export async function POST(req: Request) {
     // ✅ ENABLE_IMAGE_GEN is true — generate image with prompt
     // Extract imagePrompt from the Gemini result (you likely store it or embed it in `result`)
     const promptMatch = result.match(/\*\*Image Prompt\*\*([\s\S]*?)```?/);
-    const imagePrompt = promptMatch ? promptMatch[1].trim() : null;
+    let imagePrompt = promptMatch ? promptMatch[1].trim() : null;
 
     if (!imagePrompt || imagePrompt.length < 10) {
       console.warn('⚠️ No valid image prompt found in Gemini result.');
@@ -46,11 +46,28 @@ export async function POST(req: Request) {
       });
     }
 
+    // Clean up the prompt for DALL-E generation (remove prefixes)
+    let cleanedPrompt = imagePrompt;
+    // Remove common prefixes like "Flatlay of...", "A formal outfit for...", etc.
+    cleanedPrompt = cleanedPrompt.replace(/^(flatlay of|a\s+\w+\s+outfit for|an?\s+\w+\s+outfit for)\s+/i, '');
+    cleanedPrompt = cleanedPrompt.replace(/^.*?including\s+exactly\s+\d+\s+items?:\s*/i, '');
+    cleanedPrompt = cleanedPrompt.replace(/^.*?with\s+\d+\s+items?:\s*/i, '');
+    
+    // Remove any remaining prefixes that might contain age or style info
+    cleanedPrompt = cleanedPrompt.replace(/^.*?for\s+a\s+person\s+age\s+\d+[-\d]*\s*years?\s*old\s*:\s*/i, '');
+    cleanedPrompt = cleanedPrompt.replace(/^.*?for\s+an?\s+\d+[-\d]*\s*year\s*old\s*:\s*/i, '');
+    
+    // Clean up any remaining colons and extra spaces
+    cleanedPrompt = cleanedPrompt.replace(/^:\s*/, '').trim();
+    
+    // Add "Flatlay of" prefix for DALL-E generation
+    const dallEPrompt = `Flatlay of ${cleanedPrompt}`;
+
     // 🔁 Call the image generation route directly (recommended: POST fetch to internal API)
     const imageGenResponse = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/generate-and-upload-image`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ imagePrompt }),
+      body: JSON.stringify({ imagePrompt: dallEPrompt }),
     });
 
     const imageData = await imageGenResponse.json();
