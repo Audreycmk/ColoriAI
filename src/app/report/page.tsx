@@ -712,7 +712,7 @@ export default function ReportPage() {
         foundationsContainer.style.maxWidth = '150mm';
         foundationsContainer.style.margin = '0 auto';
         
-        analysisData.makeup.foundations.forEach((product, index) => {
+        analysisData.makeup.foundations.forEach((product) => {
           const productItem = document.createElement('div');
           productItem.style.display = 'flex';
           productItem.style.alignItems = 'center';
@@ -990,7 +990,7 @@ export default function ReportPage() {
       // Add Foundations links
       if (analysisData.makeup.foundations.length > 0) {
         linkY += 20; // Space for section title
-        analysisData.makeup.foundations.forEach((product, index) => {
+        analysisData.makeup.foundations.forEach((product) => {
           if (product.url) {
             const linkX = margin + makeupImgWidth - 36; // Increased gap by 1px from 35 to 36
             pdf.setTextColor(0, 102, 204); // Blue color
@@ -999,11 +999,7 @@ export default function ReportPage() {
             pdf.text('View Product', linkX, linkY + 3);
           }
           // Move second foundation down 1px
-          if (index === 1) {
-            linkY += 13; // 12 + 1 = 13px for second foundation
-          } else {
-            linkY += 12; // Reduced space between products
-          }
+          linkY += 12; // Reduced space between products
         });
       }
       
