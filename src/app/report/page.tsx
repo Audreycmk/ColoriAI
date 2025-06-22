@@ -187,7 +187,20 @@ export default function ReportPage() {
             }
           }
           else if (lines[0].includes('Korean Cushion:')) {
-            // Fallback for unstructured Korean Cushion data
+            for (let i = 2; i < lines.length; i++) { // Skip header: Brand,Product,...
+              const parts = lines[i].split(',');
+              if (parts.length >= 5) {
+                data.makeup.cushion = {
+                  brand: parts[0].trim(),
+                  product: parts[1].trim(),
+                  shade: parts[2].trim(),
+                  hex: parts[3].trim(),
+                  url: parts[4].replace(/\[|\]|\(|\)/g, '').trim()
+                };
+              }
+            }
+            // Fallback if no structured data found
+            if (!data.makeup.cushion.brand) {
             data.makeup.cushion = {
               brand: 'Sulwhasoo / Hera / IOPE',
               product: 'Select based on undertone',
@@ -195,6 +208,7 @@ export default function ReportPage() {
               hex: '#B58A6B',
               url: 'https://www.sulwhasoo.com'
             };
+            }
           }
           else if (lines[0].includes('Lipsticks:')) {
             for (let i = 2; i < lines.length; i++) { // Skip header: Brand,Product,...
@@ -208,6 +222,39 @@ export default function ReportPage() {
                   url: parts[4].replace(/\[|\]|\(|\)/g, '').trim()
                 });
               }
+            }
+            // Fallback if no structured data found
+            if (data.makeup.lipsticks.length === 0) {
+              data.makeup.lipsticks = [
+                {
+                  brand: 'NARS',
+                  product: 'Audacious Lipstick',
+                  shade: 'Anna',
+                  hex: '#B09FA0',
+                  url: 'https://www.narscosmetics.com'
+                },
+                {
+                  brand: 'Dior',
+                  product: 'Rouge Dior',
+                  shade: '#772 Rose Montaigne',
+                  hex: '#E2D3D2',
+                  url: 'https://www.dior.com'
+                },
+                {
+                  brand: 'MAC',
+                  product: 'Matte Lipstick',
+                  shade: 'Velvet Teddy',
+                  hex: '#B09FA0',
+                  url: 'https://www.maccosmetics.com'
+                },
+                {
+                  brand: 'Charlotte Tilbury',
+                  product: 'Matte Revolution',
+                  shade: 'Pillow Talk',
+                  hex: '#E2D3D2',
+                  url: 'https://www.charlottetilbury.com'
+                }
+              ];
             }
           }
           else if (lines[0].includes('Blushes:')) {
@@ -225,14 +272,28 @@ export default function ReportPage() {
             }
           }
           else if (lines[0].includes('Eyeshadow Palettes:')) {
-            // Fallback for unstructured Eyeshadow Palettes data
+            for (let i = 2; i < lines.length; i++) { // Skip header: Brand,Product,...
+              const parts = lines[i].split(',');
+              if (parts.length >= 5) {
+                data.makeup.eyeshadows.push({
+                  brand: parts[0].trim(),
+                  product: parts[1].trim(),
+                  shade: parts[2].trim(),
+                  hex: parts[3].trim(),
+                  url: parts[4].replace(/\[|\]|\(|\)/g, '').trim()
+                });
+              }
+            }
+            // Fallback if no structured data found
+            if (data.makeup.eyeshadows.length === 0) {
             data.makeup.eyeshadows.push({
               brand: 'Charlotte Tilbury / Natasha Denona / Viseart',
               product: 'Warm earthy palette',
               shade: 'Browns, golds, muted reds',
               hex: '#A0522D',
-              url: ''
+                url: 'https://www.charlottetilbury.com'
             });
+            }
           }
           
           // Celebrities
@@ -320,6 +381,20 @@ export default function ReportPage() {
                 shade: '#772 Rose Montaigne',
                 hex: '#E2D3D2',
                 url: 'https://www.dior.com'
+              },
+              {
+                brand: 'MAC',
+                product: 'Matte Lipstick',
+                shade: 'Velvet Teddy',
+                hex: '#B09FA0',
+                url: 'https://www.maccosmetics.com'
+              },
+              {
+                brand: 'Charlotte Tilbury',
+                product: 'Matte Revolution',
+                shade: 'Pillow Talk',
+                hex: '#E2D3D2',
+                url: 'https://www.charlottetilbury.com'
               }
             ],
             blushes: [
@@ -433,7 +508,7 @@ export default function ReportPage() {
       header.style.marginBottom = '2pt';
       header.innerHTML = `
         <img src="/ColoriAI.png" alt="ColoriAI Logo" style="width: 250px; height: auto; margin-bottom: 30px; margin-top: 10px;" />
-        <h1 style="font-size: 24pt; font-weight: bold; margin-bottom: 8pt; color: #3c3334;">${analysisData.seasonType}</h1>
+        <h2 style="font-size: 24pt; font-weight: 600; margin-bottom: 16pt; color: #3c3334;"><span style="font-weight: 400;font-size: 18pt;">Your Color Type:</span> ${analysisData.seasonType}</h2>
         <p style="font-size: 10pt; color: #666; margin-bottom: 16pt;">Generated by ColoriAI • ${new Date().toLocaleDateString()}</p>
       `;
       pdfContainer.appendChild(header);
@@ -587,6 +662,290 @@ export default function ReportPage() {
       // Clean up
       document.body.removeChild(pdfContainer);
   
+      // Create second page for makeup suggestions
+      const makeupPdfContainer = document.createElement('div');
+      makeupPdfContainer.style.width = '210mm';
+      makeupPdfContainer.style.height = '310mm';
+      makeupPdfContainer.style.fontSize = '12pt';
+      makeupPdfContainer.style.background = '#FCF2DF';
+      makeupPdfContainer.style.fontFamily = 'Quicksand, sans-serif';
+      makeupPdfContainer.style.textAlign = 'center';
+      document.body.appendChild(makeupPdfContainer);
+  
+      // Add header with ColoriAI logo for second page
+      const makeupHeader = document.createElement('div');
+      makeupHeader.style.marginBottom = '2pt';
+      makeupHeader.innerHTML = `
+        <img src="/ColoriAI.png" alt="ColoriAI Logo" style="width: 250px; height: auto; margin-bottom: 30px; margin-top: 10px;" />
+        <h2 style="font-size: 24pt; font-weight: 600; margin-bottom: 16pt; color: #3c3334;"><span style="font-weight: 400; font-size: 18pt;">Makeup Suggestion:</span> <span style="font-weight: 600;">${analysisData.seasonType}</span></h2>
+        <p style="font-size: 10pt; color: #666; margin-bottom: 16pt;">Generated by ColoriAI • ${new Date().toLocaleDateString()}</p>
+      `;
+      makeupPdfContainer.appendChild(makeupHeader);
+  
+      // Create makeup content container
+      const makeupContentContainer = document.createElement('div');
+      makeupContentContainer.style.textAlign = 'center';
+      makeupContentContainer.style.display = 'flex';
+      makeupContentContainer.style.flexDirection = 'column';
+      makeupContentContainer.style.alignItems = 'center';
+      makeupContentContainer.style.justifyContent = 'center';
+      makeupPdfContainer.appendChild(makeupContentContainer);
+  
+      // Add Makeup Suggestions
+      const makeupSection = document.createElement('div');
+      makeupSection.style.marginBottom = '8pt';
+      
+      makeupContentContainer.appendChild(makeupSection);
+  
+      // Add Foundations
+      if (analysisData.makeup.foundations.length > 0) {
+        const foundationsSection = document.createElement('div');
+        foundationsSection.style.marginBottom = '16pt';
+        foundationsSection.innerHTML = `
+          <h3 style="font-size: 14pt; font-weight: 600; margin-bottom: 8pt; color: #3c3334;">Foundations</h3>
+        `;
+        
+        const foundationsContainer = document.createElement('div');
+        foundationsContainer.style.display = 'flex';
+        foundationsContainer.style.flexDirection = 'column';
+        foundationsContainer.style.gap = '8pt';
+        foundationsContainer.style.maxWidth = '150mm';
+        foundationsContainer.style.margin = '0 auto';
+        
+        analysisData.makeup.foundations.forEach((product, index) => {
+          const productItem = document.createElement('div');
+          productItem.style.display = 'flex';
+          productItem.style.alignItems = 'center';
+          productItem.style.gap = '8pt';
+          productItem.style.padding = '8pt';
+          productItem.style.backgroundColor = 'white';
+          productItem.style.borderRadius = '4pt';
+          productItem.style.boxShadow = '0 1pt 2pt rgba(0,0,0,0.1)';
+          
+          const colorCircle = document.createElement('div');
+          colorCircle.style.width = '20pt';
+          colorCircle.style.height = '20pt';
+          colorCircle.style.borderRadius = '50%';
+          colorCircle.style.backgroundColor = product.hex || '#CCCCCC';
+          colorCircle.style.flexShrink = '0';
+          
+          const productInfo = document.createElement('div');
+          productInfo.style.textAlign = 'left';
+          productInfo.style.flex = '1';
+          productInfo.innerHTML = `
+            <p style="font-size: 10pt; font-weight: 500; margin: 0; color: #3c3334;">${product.brand} ${product.product}</p>
+            <p style="font-size: 8pt; margin: 0; color: #666;">${product.shade}</p>
+          `;
+          
+          productItem.appendChild(colorCircle);
+          productItem.appendChild(productInfo);
+          foundationsContainer.appendChild(productItem);
+        });
+        
+        foundationsSection.appendChild(foundationsContainer);
+        makeupContentContainer.appendChild(foundationsSection);
+      }
+  
+      // Add Korean Cushion
+      if (analysisData.makeup.cushion && analysisData.makeup.cushion.brand) {
+        const cushionSection = document.createElement('div');
+        cushionSection.style.marginBottom = '16pt';
+        cushionSection.innerHTML = `
+          <h3 style="font-size: 14pt; font-weight: 600; margin-bottom: 8pt; color: #3c3334;">Korean Cushion</h3>
+        `;
+        
+        const cushionItem = document.createElement('div');
+        cushionItem.style.display = 'flex';
+        cushionItem.style.alignItems = 'center';
+        cushionItem.style.gap = '8pt';
+        cushionItem.style.padding = '8pt';
+        cushionItem.style.backgroundColor = 'white';
+        cushionItem.style.borderRadius = '4pt';
+        cushionItem.style.boxShadow = '0 1pt 2pt rgba(0,0,0,0.1)';
+        cushionItem.style.maxWidth = '150mm';
+        cushionItem.style.margin = '0 auto';
+        
+        const colorCircle = document.createElement('div');
+        colorCircle.style.width = '20pt';
+        colorCircle.style.height = '20pt';
+        colorCircle.style.borderRadius = '50%';
+        colorCircle.style.backgroundColor = analysisData.makeup.cushion.hex || '#CCCCCC';
+        colorCircle.style.flexShrink = '0';
+        
+        const productInfo = document.createElement('div');
+        productInfo.style.textAlign = 'left';
+        productInfo.style.flex = '1';
+        productInfo.innerHTML = `
+          <p style="font-size: 10pt; font-weight: 500; margin: 0; color: #3c3334;">${analysisData.makeup.cushion.brand} ${analysisData.makeup.cushion.product}</p>
+          <p style="font-size: 8pt; margin: 0; color: #666;">${analysisData.makeup.cushion.shade}</p>
+        `;
+        
+        cushionItem.appendChild(colorCircle);
+        cushionItem.appendChild(productInfo);
+        cushionSection.appendChild(cushionItem);
+        makeupContentContainer.appendChild(cushionSection);
+      }
+  
+      // Add Lipsticks
+      if (analysisData.makeup.lipsticks.length > 0) {
+        const lipsticksSection = document.createElement('div');
+        lipsticksSection.style.marginBottom = '16pt';
+        lipsticksSection.innerHTML = `
+          <h3 style="font-size: 14pt; font-weight: 600; margin-bottom: 8pt; color: #3c3334;">Lipsticks</h3>
+        `;
+        
+        const lipsticksContainer = document.createElement('div');
+        lipsticksContainer.style.display = 'flex';
+        lipsticksContainer.style.flexDirection = 'column';
+        lipsticksContainer.style.gap = '8pt';
+        lipsticksContainer.style.maxWidth = '150mm';
+        lipsticksContainer.style.margin = '0 auto';
+        
+        analysisData.makeup.lipsticks.forEach((product, index) => {
+          const productItem = document.createElement('div');
+          productItem.style.display = 'flex';
+          productItem.style.alignItems = 'center';
+          productItem.style.gap = '8pt';
+          productItem.style.padding = '8pt';
+          productItem.style.backgroundColor = 'white';
+          productItem.style.borderRadius = '4pt';
+          productItem.style.boxShadow = '0 1pt 2pt rgba(0,0,0,0.1)';
+          
+          const colorCircle = document.createElement('div');
+          colorCircle.style.width = '20pt';
+          colorCircle.style.height = '20pt';
+          colorCircle.style.borderRadius = '50%';
+          colorCircle.style.backgroundColor = product.hex || '#CCCCCC';
+          colorCircle.style.flexShrink = '0';
+          
+          const productInfo = document.createElement('div');
+          productInfo.style.textAlign = 'left';
+          productInfo.style.flex = '1';
+          productInfo.innerHTML = `
+            <p style="font-size: 10pt; font-weight: 500; margin: 0; color: #3c3334;">${product.brand} ${product.product}</p>
+            <p style="font-size: 8pt; margin: 0; color: #666;">${product.shade}</p>
+          `;
+          
+          productItem.appendChild(colorCircle);
+          productItem.appendChild(productInfo);
+          lipsticksContainer.appendChild(productItem);
+        });
+        
+        lipsticksSection.appendChild(lipsticksContainer);
+        makeupContentContainer.appendChild(lipsticksSection);
+      }
+  
+      // Add Blushes
+      if (analysisData.makeup.blushes.length > 0) {
+        const blushesSection = document.createElement('div');
+        blushesSection.style.marginBottom = '16pt';
+        blushesSection.innerHTML = `
+          <h3 style="font-size: 14pt; font-weight: 600; margin-bottom: 8pt; color: #3c3334;">Blushes</h3>
+        `;
+        
+        const blushesContainer = document.createElement('div');
+        blushesContainer.style.display = 'flex';
+        blushesContainer.style.flexDirection = 'column';
+        blushesContainer.style.gap = '8pt';
+        blushesContainer.style.maxWidth = '150mm';
+        blushesContainer.style.margin = '0 auto';
+        
+        analysisData.makeup.blushes.forEach((product, index) => {
+          const productItem = document.createElement('div');
+          productItem.style.display = 'flex';
+          productItem.style.alignItems = 'center';
+          productItem.style.gap = '8pt';
+          productItem.style.padding = '8pt';
+          productItem.style.backgroundColor = 'white';
+          productItem.style.borderRadius = '4pt';
+          productItem.style.boxShadow = '0 1pt 2pt rgba(0,0,0,0.1)';
+          
+          const colorCircle = document.createElement('div');
+          colorCircle.style.width = '20pt';
+          colorCircle.style.height = '20pt';
+          colorCircle.style.borderRadius = '50%';
+          colorCircle.style.backgroundColor = product.hex || '#CCCCCC';
+          colorCircle.style.flexShrink = '0';
+          
+          const productInfo = document.createElement('div');
+          productInfo.style.textAlign = 'left';
+          productInfo.style.flex = '1';
+          productInfo.innerHTML = `
+            <p style="font-size: 10pt; font-weight: 500; margin: 0; color: #3c3334;">${product.brand} ${product.product}</p>
+            <p style="font-size: 8pt; margin: 0; color: #666;">${product.shade}</p>
+          `;
+          
+          productItem.appendChild(colorCircle);
+          productItem.appendChild(productInfo);
+          blushesContainer.appendChild(productItem);
+        });
+        
+        blushesSection.appendChild(blushesContainer);
+        makeupContentContainer.appendChild(blushesSection);
+      }
+  
+      // Add Eyeshadow Palettes
+      if (analysisData.makeup.eyeshadows.length > 0) {
+        const eyeshadowsSection = document.createElement('div');
+        eyeshadowsSection.style.marginBottom = '16pt';
+        eyeshadowsSection.innerHTML = `
+          <h3 style="font-size: 14pt; font-weight: 600; margin-bottom: 8pt; color: #3c3334;">Eyeshadow Palettes</h3>
+        `;
+        
+        const eyeshadowsContainer = document.createElement('div');
+        eyeshadowsContainer.style.display = 'flex';
+        eyeshadowsContainer.style.flexDirection = 'column';
+        eyeshadowsContainer.style.gap = '8pt';
+        eyeshadowsContainer.style.maxWidth = '150mm';
+        eyeshadowsContainer.style.margin = '0 auto';
+        
+        analysisData.makeup.eyeshadows.forEach((product, index) => {
+          const productItem = document.createElement('div');
+          productItem.style.display = 'flex';
+          productItem.style.alignItems = 'center';
+          productItem.style.gap = '8pt';
+          productItem.style.padding = '8pt';
+          productItem.style.backgroundColor = 'white';
+          productItem.style.borderRadius = '4pt';
+          productItem.style.boxShadow = '0 1pt 2pt rgba(0,0,0,0.1)';
+          
+          const colorCircle = document.createElement('div');
+          colorCircle.style.width = '20pt';
+          colorCircle.style.height = '20pt';
+          colorCircle.style.borderRadius = '50%';
+          colorCircle.style.backgroundColor = product.hex || '#CCCCCC';
+          colorCircle.style.flexShrink = '0';
+          
+          const productInfo = document.createElement('div');
+          productInfo.style.textAlign = 'left';
+          productInfo.style.flex = '1';
+          productInfo.innerHTML = `
+            <p style="font-size: 10pt; font-weight: 500; margin: 0; color: #3c3334;">${product.brand} ${product.product}</p>
+            <p style="font-size: 8pt; margin: 0; color: #666;">${product.shade}</p>
+          `;
+          
+          productItem.appendChild(colorCircle);
+          productItem.appendChild(productInfo);
+          eyeshadowsContainer.appendChild(productItem);
+        });
+        
+        eyeshadowsSection.appendChild(eyeshadowsContainer);
+        makeupContentContainer.appendChild(eyeshadowsSection);
+      }
+  
+      // Generate canvas for makeup page
+      const makeupCanvas = await html2canvas(makeupPdfContainer, {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        backgroundColor: '#FCF2DF',
+        width: makeupPdfContainer.offsetWidth,
+        height: makeupPdfContainer.offsetHeight
+      });
+  
+      // Clean up makeup container
+      document.body.removeChild(makeupPdfContainer);
+  
       // Create PDF
       const pdf = new jsPDF('p', 'mm', 'a4');
       const pageWidth = pdf.internal.pageSize.getWidth();
@@ -597,14 +956,14 @@ export default function ReportPage() {
       const imgWidth = pageWidth - (margin * 2);
       const imgHeight = (canvas.height * imgWidth) / canvas.width;
   
-      // Add content
+      // Add first page content
       let heightLeft = imgHeight;
       let position = margin;
       const pageContentHeight = pageHeight - (margin * 2);
   
       pdf.addImage(canvas, 'JPEG', margin, position, imgWidth, imgHeight, undefined, 'FAST');
   
-      // Add additional pages if needed
+      // Add additional pages if needed for first page content
       while (heightLeft > pageContentHeight) {
         position -= pageContentHeight;
         pdf.addPage();
@@ -612,10 +971,114 @@ export default function ReportPage() {
         heightLeft -= pageContentHeight;
       }
   
-      // Add footer with copyright outside the background
-      pdf.setFontSize(8);
-      pdf.setTextColor(102, 102, 102);
-      pdf.text('© 2025 ColoriAI. All rights reserved.', pageWidth / 2, pageHeight - 10, { align: 'center' });
+      // Add second page with makeup suggestions
+      pdf.addPage();
+      
+      // Calculate makeup page image dimensions
+      const makeupImgWidth = pageWidth - (margin * 2);
+      const makeupImgHeight = (makeupCanvas.height * makeupImgWidth) / makeupCanvas.width;
+      
+      // Add makeup page content
+      let makeupHeightLeft = makeupImgHeight;
+      let makeupPosition = margin;
+      
+      pdf.addImage(makeupCanvas, 'JPEG', margin, makeupPosition, makeupImgWidth, makeupImgHeight, undefined, 'FAST');
+      
+      // Add clickable "View Product" links for makeup products
+      let linkY = makeupPosition + 45; // Moved up 6px from 51 to 45
+      
+      // Add Foundations links
+      if (analysisData.makeup.foundations.length > 0) {
+        linkY += 20; // Space for section title
+        analysisData.makeup.foundations.forEach((product, index) => {
+          if (product.url) {
+            const linkX = margin + makeupImgWidth - 36; // Increased gap by 1px from 35 to 36
+            pdf.setTextColor(0, 102, 204); // Blue color
+            pdf.setFontSize(8);
+            pdf.link(linkX, linkY, 30, 5, { url: product.url });
+            pdf.text('View Product', linkX, linkY + 3);
+          }
+          // Move second foundation down 1px
+          if (index === 1) {
+            linkY += 13; // 12 + 1 = 13px for second foundation
+          } else {
+            linkY += 12; // Reduced space between products
+          }
+        });
+      }
+      
+      // Add Korean Cushion link
+      if (analysisData.makeup.cushion && analysisData.makeup.cushion.url) {
+        linkY += 15; // Space for section title
+        const linkX = margin + makeupImgWidth - 36;
+        pdf.setTextColor(0, 102, 204);
+        pdf.setFontSize(8);
+        pdf.link(linkX, linkY, 30, 5, { url: analysisData.makeup.cushion.url });
+        pdf.text('View Product', linkX, linkY + 3);
+        linkY += 12;
+      }
+      
+      // Add Lipsticks links
+      if (analysisData.makeup.lipsticks.length > 0) {
+        linkY += 15; // Space for section title
+        analysisData.makeup.lipsticks.forEach((product, index) => {
+          if (product.url) {
+            const linkX = margin + makeupImgWidth - 36;
+            pdf.setTextColor(0, 102, 204);
+            pdf.setFontSize(8);
+            pdf.link(linkX, linkY, 30, 5, { url: product.url });
+            pdf.text('View Product', linkX, linkY + 3);
+          }
+          linkY += 13; // Increased gap by 1px from 12 to 13
+        });
+      }
+      
+      // Add Blushes links
+      if (analysisData.makeup.blushes.length > 0) {
+        linkY += 15; // Space for section title
+        analysisData.makeup.blushes.forEach((product, index) => {
+          if (product.url) {
+            const linkX = margin + makeupImgWidth - 36;
+            pdf.setTextColor(0, 102, 204);
+            pdf.setFontSize(8);
+            pdf.link(linkX, linkY, 30, 5, { url: product.url });
+            pdf.text('View Product', linkX, linkY + 3);
+          }
+          linkY += 12;
+        });
+      }
+      
+      // Add Eyeshadow Palettes links
+      if (analysisData.makeup.eyeshadows.length > 0) {
+        linkY += 15; // Space for section title
+        analysisData.makeup.eyeshadows.forEach((product, index) => {
+          if (product.url) {
+            const linkX = margin + makeupImgWidth - 36;
+            pdf.setTextColor(0, 102, 204);
+            pdf.setFontSize(8);
+            pdf.link(linkX, linkY, 30, 5, { url: product.url });
+            pdf.text('View Product', linkX, linkY + 3);
+          }
+          linkY += 12;
+        });
+      }
+
+      // Add additional pages if needed for makeup content
+      while (makeupHeightLeft > pageContentHeight) {
+        makeupPosition -= pageContentHeight;
+        pdf.addPage();
+        pdf.addImage(makeupCanvas, 'JPEG', margin, makeupPosition, makeupImgWidth, makeupImgHeight, undefined, 'FAST');
+        makeupHeightLeft -= pageContentHeight;
+      }
+
+      // Add footer with copyright outside the background on each page
+      const totalPages = pdf.getNumberOfPages();
+      for (let i = 1; i <= totalPages; i++) {
+        pdf.setPage(i);
+        pdf.setFontSize(8);
+        pdf.setTextColor(102, 102, 102);
+        pdf.text('© 2025 ColoriAI. All rights reserved.', pageWidth / 2, pageHeight - 10, { align: 'center' });
+      }
   
       setShowPopup(currentPopup);
       pdf.save('ColoriAI_Report.pdf');
@@ -881,7 +1344,7 @@ export default function ReportPage() {
             {analysisData.outfit.imagePrompt && (
               <div className="m-[20px] mb-[50px] text-sm">
                 <p className="font-black">Outfit Description:</p> 
-                <p>{analysisData.outfit.imagePrompt}</p>
+                <p>{analysisData.outfit.imagePrompt.replace(/\*\*/g, '')}</p>
               </div>
             )}
           </div>
@@ -897,7 +1360,7 @@ export default function ReportPage() {
       <h3 className="font-medium text-base m-[20px]">Foundations</h3>
       <div className="grid grid-cols-1 gap-3">
         {analysisData.makeup.foundations.map((product, index) => (
-          <div key={index} className="flex items-center gap-4 p-3 bg-white rounded-lg shadow-sm">
+          <div key={index} className={`flex items-center gap-4 p-3 bg-white rounded-lg shadow-sm ${index === 1 ? 'mt-1' : ''}`}>
             <div className="flex flex-col items-center gap-1">
               <div 
                 className="w-[40px] h-[40px] rounded-full m-[20px]"
@@ -914,7 +1377,7 @@ export default function ReportPage() {
                 href={product.url} 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="text-blue-600 hover:underline text-xs whitespace-nowrap mr-[10px]"
+                className="text-blue-600 underline text-xs whitespace-nowrap mr-[10px]"
               >
                 View Product
               </a>
@@ -945,7 +1408,7 @@ export default function ReportPage() {
             href={analysisData.makeup.cushion.url} 
             target="_blank" 
             rel="noopener noreferrer"
-            className="text-blue-600 hover:underline text-xs whitespace-nowrap mr-[10px]"
+            className="text-blue-600 underline text-xs whitespace-nowrap mr-[10px]"
             >
               View Product
             </a>
@@ -958,9 +1421,9 @@ export default function ReportPage() {
   {analysisData.makeup.lipsticks.length > 0 && (
     <div className="mb-6">
       <h3 className="font-medium text-base m-[20px]">Lipsticks</h3>
-      <div className="grid grid-cols-1 gap-3">
+      <div className="grid grid-cols-1 gap-4">
         {analysisData.makeup.lipsticks.map((product, index) => (
-          <div key={index} className="flex items-center gap-4 p-3 bg-white rounded-lg shadow-sm">
+          <div key={index} className="flex items-center gap-4 p-3 bg-white rounded-lg shadow-sm -mt-1">
             <div className="flex flex-col items-center gap-1">
               <div 
                 className="w-[40px] h-[40px] rounded-full m-[20px]"
@@ -977,7 +1440,7 @@ export default function ReportPage() {
                 href={product.url} 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="text-blue-600 hover:underline text-xs whitespace-nowrap mr-[10px]"
+                className="text-blue-600 underline text-xs whitespace-nowrap mr-[10px]"
               >
                 View Product
               </a>
@@ -1008,7 +1471,7 @@ export default function ReportPage() {
                 href={product.url} 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="text-blue-600 hover:underline text-xs whitespace-nowrap mr-[10px]"
+                className="text-blue-600 underline text-xs whitespace-nowrap mr-[10px]"
               >
                 View Product
               </a>
@@ -1046,7 +1509,7 @@ export default function ReportPage() {
                 href={product.url} 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="text-blue-600 hover:underline text-xs whitespace-nowrap"
+                className="text-blue-600 underline text-xs whitespace-nowrap"
               >
                 View Product
               </a>

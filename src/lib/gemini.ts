@@ -48,7 +48,7 @@ export async function analyzeFace(imageBase64: string, age?: string, style?: str
 
    ⚠️ Do not identify or describe the person.  
    Focus only on visible visual traits:
-   - Skin undertone (avoid makeup)
+   - Skin color
    - Natural eye color
    - Natural hair color
 
@@ -71,7 +71,7 @@ export async function analyzeFace(imageBase64: string, age?: string, style?: str
    5. **2 Flattering Hair Colors** (CSV: Name, HEX)
 
    6. **Makeup Suggestions** - 2 Foundations (Brand, Product, Shade, HEX, URL)  
-      - 1 Korean Cushion  
+      - 1 Korean Cushion
       - 4 Lipsticks  
       - 2 Blushes  
       - 2 Eyeshadow Palettes  

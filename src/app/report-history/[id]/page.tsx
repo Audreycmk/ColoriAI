@@ -118,42 +118,42 @@ export default function ReportDetailPage() {
       )}
 
       <div className="text-center">
-        <h1 className="text-2xl font-bold mb-2">{report.result.seasonType}</h1>
-        <p className="text-sm text-gray-500 mb-4">
-          Created: {new Date(report.createdAt).toLocaleString()}
-        </p>
+      <h1 className="text-2xl font-bold mb-2">{report.result.seasonType}</h1>
+      <p className="text-sm text-gray-500 mb-4">
+        Created: {new Date(report.createdAt).toLocaleString()}
+      </p>
 
-        {report.outfitImage && (
-          <img
-            src={report.outfitImage}
-            alt="Outfit"
+      {report.outfitImage && (
+        <img
+          src={report.outfitImage}
+          alt="Outfit"
             className="w-full max-w-md mb-6 rounded shadow mx-auto"
-          />
-        )}
+        />
+      )}
 
-        <div className="mb-8">
-          <h2 className="font-semibold mb-2">Color Extraction</h2>
+      <div className="mb-8">
+        <h2 className="font-semibold mb-2">Color Extraction</h2>
           <div className="flex flex-wrap gap-[80px] justify-center">
-            {report.result.colorExtraction.map((c, i) => (
-              <div key={`${c.label}-${i}`} className="text-center">
+          {report.result.colorExtraction.map((c, i) => (
+            <div key={`${c.label}-${i}`} className="text-center">
                 <div className="w-[60px] h-[60px] rounded-full mx-auto" style={{ backgroundColor: c.hex }} />
-                <p className="text-xs">{c.label}</p>
-                <p className="text-xs">{c.hex}</p>
-              </div>
-            ))}
-          </div>
+              <p className="text-xs">{c.label}</p>
+              <p className="text-xs">{c.hex}</p>
+            </div>
+          ))}
         </div>
+      </div>
 
-        <div className="mb-8">
-          <h2 className="font-semibold mb-2">Color Palette</h2>
+      <div className="mb-8">
+        <h2 className="font-semibold mb-2">Color Palette</h2>
           <div className="grid grid-cols-3 gap-3 max-w-xs mx-auto">
-            {report.result.colorPalette.map((c, i) => (
-              <div key={`${c.name}-${i}`} className="text-center">
+          {report.result.colorPalette.map((c, i) => (
+            <div key={`${c.name}-${i}`} className="text-center">
                 <div className="w-[50px] h-[50px] rounded-sm mx-auto" style={{ backgroundColor: c.hex, borderRadius: '5px' }} />
-                <p className="text-xs">{c.name}</p>
-                <p className="text-xs">{c.hex}</p>
-              </div>
-            ))}
+              <p className="text-xs">{c.name}</p>
+              <p className="text-xs">{c.hex}</p>
+            </div>
+          ))}
           </div>
         </div>
       </div>
