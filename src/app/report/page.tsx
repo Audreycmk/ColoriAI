@@ -315,12 +315,22 @@ export default function ReportPage() {
             prompt = prompt.replace(/^.*?including\s+exactly\s+\d+\s+items?:\s*/i, '');
             prompt = prompt.replace(/^.*?with\s+\d+\s+items?:\s*/i, '');
             
-            // Remove any remaining prefixes that might contain age or style info
+            // Remove age-related prefixes but keep the outfit description
             prompt = prompt.replace(/^.*?for\s+a\s+person\s+age\s+\d+[-\d]*\s*years?\s*old\s*:\s*/i, '');
             prompt = prompt.replace(/^.*?for\s+an?\s+\d+[-\d]*\s*year\s*old\s*:\s*/i, '');
+            prompt = prompt.replace(/^.*?for\s+a\s+woman\s+age\s+\d+[-\d]*\s*:\s*/i, '');
+            prompt = prompt.replace(/^.*?for\s+a\s+man\s+age\s+\d+[-\d]*\s*:\s*/i, '');
+            
+            // Remove "Image Prompt:" if it appears in the cleaned text
+            prompt = prompt.replace(/^Image Prompt:\s*/i, '');
             
             // Clean up any remaining colons and extra spaces
             prompt = prompt.replace(/^:\s*/, '').trim();
+            
+            // If the prompt is empty or just whitespace after cleaning, use the original
+            if (!prompt || prompt.trim() === '') {
+              prompt = lines[0].split(':')[1].trim();
+            }
             
             data.outfit.imagePrompt = prompt;
           }
@@ -1315,8 +1325,8 @@ export default function ReportPage() {
           </div>
 
           {/* Outfit */}
-          <div className="mt-[50px] mb-8 text-center">
-            <p className={styles.reportTitle}>OUTFIT GUIDE</p>
+          <div className="mt-[50px] mb-[50px] text-center">
+            <p className={styles.reportTitle}>Ai Generated OUTFIT</p>
             {analysisData.outfit.generatedImage && 
              analysisData.outfit.generatedImage !== '/outfit-demo.png' && 
              analysisData.outfit.generatedImage !== 'undefined' && 
@@ -1338,8 +1348,8 @@ export default function ReportPage() {
               />
             )}
             {analysisData.outfit.imagePrompt && (
-              <div className="m-[20px] mb-[50px] text-sm">
-                <p className="font-black">Outfit Description:</p> 
+              <div className="m-[20px] mb-[50px] text-sm -mt-[10px]">
+                <p className={styles.reportTitle}>AI-Styled Look</p> 
                 <p>{analysisData.outfit.imagePrompt.replace(/\*\*/g, '')}</p>
               </div>
             )}
@@ -1347,7 +1357,7 @@ export default function ReportPage() {
 
            {/* Makeup Suggestion */}
          
-  <div className="mt-[20px] mb-[50px] px-6">
+  <div className="mt-[30px] mb-[100px] px-6">
   <p className={styles.reportTitle}>MAKEUP SUGGESTION</p>
 
   {/* Foundations */}
