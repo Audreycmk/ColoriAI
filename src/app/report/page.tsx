@@ -850,7 +850,7 @@ export default function ReportPage() {
         blushesContainer.style.maxWidth = '150mm';
         blushesContainer.style.margin = '0 auto';
         
-        analysisData.makeup.blushes.forEach((product, index) => {
+        analysisData.makeup.blushes.forEach((product) => {
           const productItem = document.createElement('div');
           productItem.style.display = 'flex';
           productItem.style.alignItems = 'center';
@@ -899,7 +899,7 @@ export default function ReportPage() {
         eyeshadowsContainer.style.maxWidth = '150mm';
         eyeshadowsContainer.style.margin = '0 auto';
         
-        analysisData.makeup.eyeshadows.forEach((product, index) => {
+        analysisData.makeup.eyeshadows.forEach((product) => {
           const productItem = document.createElement('div');
           productItem.style.display = 'flex';
           productItem.style.alignItems = 'center';
@@ -1036,7 +1036,7 @@ export default function ReportPage() {
       // Add Blushes links
       if (analysisData.makeup.blushes.length > 0) {
         linkY += 15; // Space for section title
-        analysisData.makeup.blushes.forEach((product, index) => {
+        analysisData.makeup.blushes.forEach((product) => {
           if (product.url) {
             const linkX = margin + makeupImgWidth - 36;
             pdf.setTextColor(0, 102, 204);
@@ -1051,7 +1051,7 @@ export default function ReportPage() {
       // Add Eyeshadow Palettes links
       if (analysisData.makeup.eyeshadows.length > 0) {
         linkY += 15; // Space for section title
-        analysisData.makeup.eyeshadows.forEach((product, index) => {
+        analysisData.makeup.eyeshadows.forEach((product) => {
           if (product.url) {
             const linkX = margin + makeupImgWidth - 36;
             pdf.setTextColor(0, 102, 204);
@@ -1487,7 +1487,7 @@ export default function ReportPage() {
     <div className="mb-6">
       <h3 className="font-medium text-base  m-[20px]">Eyeshadow Palettes</h3>
       <div className="grid grid-cols-1 gap-3">
-        {analysisData.makeup.eyeshadows.map((product, index) => (
+        {analysisData.makeup.eyeshadows.map((product) => (
           <div key={product.hex} className="flex items-center gap-4 p-3 bg-white rounded-lg shadow-sm">
             {product.hex && (
               <div className="flex flex-col items-center gap-1">
