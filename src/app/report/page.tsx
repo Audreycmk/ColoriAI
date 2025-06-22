@@ -801,7 +801,7 @@ export default function ReportPage() {
         lipsticksContainer.style.maxWidth = '150mm';
         lipsticksContainer.style.margin = '0 auto';
         
-        analysisData.makeup.lipsticks.forEach((product, index) => {
+        analysisData.makeup.lipsticks.forEach((product) => {
           const productItem = document.createElement('div');
           productItem.style.display = 'flex';
           productItem.style.alignItems = 'center';
@@ -1021,7 +1021,7 @@ export default function ReportPage() {
       // Add Lipsticks links
       if (analysisData.makeup.lipsticks.length > 0) {
         linkY += 15; // Space for section title
-        analysisData.makeup.lipsticks.forEach((product, index) => {
+        analysisData.makeup.lipsticks.forEach((product) => {
           if (product.url) {
             const linkX = margin + makeupImgWidth - 36;
             pdf.setTextColor(0, 102, 204);
@@ -1029,7 +1029,7 @@ export default function ReportPage() {
             pdf.link(linkX, linkY, 30, 5, { url: product.url });
             pdf.text('View Product', linkX, linkY + 3);
           }
-          linkY += 13; // Increased gap by 1px from 12 to 13
+          linkY += 12;
         });
       }
       
