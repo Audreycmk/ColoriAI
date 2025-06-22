@@ -35,7 +35,7 @@ export async function POST(req: Request) {
     // ✅ ENABLE_IMAGE_GEN is true — generate image with prompt
     // Extract imagePrompt from the Gemini result (you likely store it or embed it in `result`)
     const promptMatch = result.match(/\*\*Image Prompt\*\*([\s\S]*?)```?/);
-    let imagePrompt = promptMatch ? promptMatch[1].trim() : null;
+    const imagePrompt = promptMatch ? promptMatch[1].trim() : null;
 
     if (!imagePrompt || imagePrompt.length < 10) {
       console.warn('⚠️ No valid image prompt found in Gemini result.');

@@ -1359,8 +1359,8 @@ export default function ReportPage() {
     <div className="mb-6">
       <h3 className="font-medium text-base m-[20px]">Foundations</h3>
       <div className="grid grid-cols-1 gap-3">
-        {analysisData.makeup.foundations.map((product, index) => (
-          <div key={index} className={`flex items-center gap-4 p-3 bg-white rounded-lg shadow-sm ${index === 1 ? 'mt-1' : ''}`}>
+        {analysisData.makeup.foundations.map((product) => (
+          <div key={product.hex} className={`flex items-center gap-4 p-3 bg-white rounded-lg shadow-sm`}>
             <div className="flex flex-col items-center gap-1">
               <div 
                 className="w-[40px] h-[40px] rounded-full m-[20px]"
@@ -1422,8 +1422,8 @@ export default function ReportPage() {
     <div className="mb-6">
       <h3 className="font-medium text-base m-[20px]">Lipsticks</h3>
       <div className="grid grid-cols-1 gap-4">
-        {analysisData.makeup.lipsticks.map((product, index) => (
-          <div key={index} className="flex items-center gap-4 p-3 bg-white rounded-lg shadow-sm -mt-1">
+        {analysisData.makeup.lipsticks.map((product) => (
+          <div key={product.hex} className="flex items-center gap-4 p-3 bg-white rounded-lg shadow-sm -mt-1">
             <div className="flex flex-col items-center gap-1">
               <div 
                 className="w-[40px] h-[40px] rounded-full m-[20px]"
@@ -1456,8 +1456,8 @@ export default function ReportPage() {
     <div className="mb-6">
       <h3 className="font-medium text-base m-[20px]">Blushes</h3>
       <div className="grid grid-cols-1 gap-3">
-        {analysisData.makeup.blushes.map((product, index) => (
-          <div key={index} className="flex items-center gap-4 p-3 bg-white rounded-lg shadow-sm">
+        {analysisData.makeup.blushes.map((product) => (
+          <div key={product.hex} className="flex items-center gap-4 p-3 bg-white rounded-lg shadow-sm">
             <div 
               className="w-[40px] h-[40px] rounded-full m-[20px]" 
               style={{ backgroundColor: product.hex || '#CCCCCC' }}
@@ -1488,7 +1488,7 @@ export default function ReportPage() {
       <h3 className="font-medium text-base  m-[20px]">Eyeshadow Palettes</h3>
       <div className="grid grid-cols-1 gap-3">
         {analysisData.makeup.eyeshadows.map((product, index) => (
-          <div key={index} className="flex items-center gap-4 p-3 bg-white rounded-lg shadow-sm">
+          <div key={product.hex} className="flex items-center gap-4 p-3 bg-white rounded-lg shadow-sm">
             {product.hex && (
               <div className="flex flex-col items-center gap-1">
                 <div 
