@@ -79,7 +79,7 @@ export async function analyzeFace(imageBase64: string, age?: string, style?: str
 
    7. **2 Similar Celebrities** — name only (no images or descriptions)
 
-   8. **Image Prompt** A **${promptStyle}** outfit for a person age **${promptAge}** including exactly **5 items**:  
+   8. **Image Prompt** Flat lay of A **${promptStyle}** outfit for a person age **${promptAge}** including exactly **5 items**:  
    - 1 top  
    - 1 bottom  
    - 1 pair of shoes  
