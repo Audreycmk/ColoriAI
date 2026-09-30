@@ -68,10 +68,11 @@ import cloudinary from 'cloudinary';
     console.log('🎨 Generating image with prompt:', imagePrompt);
 
     const apparelOnlyPrompt = [
-      'Create an apparel-only fashion product photograph in a clean, directly overhead flat lay on a plain white background.',
-      'Show the clothing and listed fashion items laid flat and unworn, neatly spaced, fully visible, and not overlapping.',
+      'Create a clean, square, directly overhead fashion catalog flat lay on a plain white background.',
+      'Use three clearly separated zones: center, one top with either one pair of pants or one skirt, or one dress; left column, one hat, one pair of sunglasses, and one pair of shoes; right column, one scarf, one necklace, and one handbag.',
+      'Make the center clothing the largest visual group. Keep every item unworn, laid flat, fully visible, evenly spaced, and not overlapping.',
       'There must be absolutely no person, girl, woman, model, mannequin, body, body part, face, hand, leg, silhouette, or reflection in the image.',
-      'Show only the five listed wardrobe items; do not add props, extra accessories, duplicates, text, or logos.',
+      'Show only the listed wardrobe items; do not add props, extra accessories, duplicates, text, or logos.',
       `Wardrobe description: ${imagePrompt}`,
     ].join(' ');
 

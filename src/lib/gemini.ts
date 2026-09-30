@@ -263,8 +263,10 @@ export async function analyzeFace(imageBase64: string, age?: string, style?: str
    - Provide exactly 2 foundations, 1 Korean cushion, 4 lipsticks, 2 blushes, and 2 eyeshadow palettes.
    - Each color must have a six-digit HEX value. Each product must include a purchasable product name, shade, six-digit HEX value, and HTTPS URL.
    - Provide exactly 2 celebrity names.
-   - The imagePrompt must describe a product-only, directly overhead flat lay of exactly 5 unworn items: one top, one bottom, one pair of shoes, one bag, and one pair of glasses. Use only 3 colors from the seasonal palette.
-   - Explicitly describe the garments and items lying flat on a plain white background. Never describe anyone wearing them. Include no person, model, mannequin, body parts, face, hands, legs, silhouette, shadows, props, extra accessories, duplicates, or HEX codes.
+   - The imagePrompt must describe an apparel-only, directly overhead flat lay on a plain white background, using only 3 colors from the seasonal palette.
+   - Specify this exact layout: center, one top plus either one pair of pants or one skirt, or one dress; left column, one hat, one pair of sunglasses, and one pair of shoes; right column, one scarf, one necklace, and one handbag.
+   - Keep the center clothing visually largest. Place each side item in its own clear space, fully visible and not overlapping. The clothes and accessories must be unworn and laid flat.
+   - Include no person, model, mannequin, body parts, face, hands, legs, silhouette, shadows, props, duplicate items, extra accessories, or HEX codes.
    `;
 
       const result = await model.generateContent([
