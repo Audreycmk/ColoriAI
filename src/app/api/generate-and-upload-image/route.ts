@@ -70,8 +70,8 @@ import cloudinary from 'cloudinary';
     const apparelOnlyPrompt = [
       'Create a clean, square, directly overhead fashion catalog flat lay on a plain white background.',
       'Follow the wardrobe description exactly. It already lists all required and optional items; do not add or remove any category.',
-      'Place the main outfit in the center as the largest group, one pair of shoes on the left, and the single handbag on the right. Place only the optional accessories named in the description in the left or right column as appropriate.',
-      'The only item allowed to appear as a pair is the shoes, with exactly two individual shoes visible. Each other listed category must appear exactly once.',
+      'Place the main outfit in the center as the largest group, with listed optional accessories arranged in side columns. Do not restate or reinterpret the inventory.',
+      'Render each inventory entry exactly once. A listed pair of shoes means the two shoes that form that one pair; do not duplicate any other category.',
       'Keep every item unworn, laid flat, fully visible, evenly spaced, and not overlapping.',
       'There must be absolutely no person, girl, woman, model, mannequin, body, body part, face, hand, leg, silhouette, or reflection in the image.',
       'Show only the wardrobe items in the description; do not add props, extra accessories, duplicates, unknown objects, text, or logos.',
