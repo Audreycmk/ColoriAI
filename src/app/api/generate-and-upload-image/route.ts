@@ -67,6 +67,14 @@ import cloudinary from 'cloudinary';
 
     console.log('🎨 Generating image with prompt:', imagePrompt);
 
+    const apparelOnlyPrompt = [
+      'Create an apparel-only fashion product photograph in a clean, directly overhead flat lay on a plain white background.',
+      'Show the clothing and listed fashion items laid flat and unworn, neatly spaced, fully visible, and not overlapping.',
+      'There must be absolutely no person, girl, woman, model, mannequin, body, body part, face, hand, leg, silhouette, or reflection in the image.',
+      'Show only the five listed wardrobe items; do not add props, extra accessories, duplicates, text, or logos.',
+      `Wardrobe description: ${imagePrompt}`,
+    ].join(' ');
+
     // const response = await openai.images.generate({
     //   model: "dall-e-3",
     //   prompt: imagePrompt,
@@ -83,7 +91,7 @@ import cloudinary from 'cloudinary';
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({ 
-        prompt: imagePrompt,
+        prompt: apparelOnlyPrompt,
         steps: 4,
       })
     });
