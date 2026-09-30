@@ -42,6 +42,30 @@ const paletteColorSchema: Schema = {
    required: ['name', 'hex'],
 };
 
+const outfitAccessorySchema: Schema = {
+   type: SchemaType.OBJECT,
+   properties: {
+      category: { type: SchemaType.STRING },
+      description: { type: SchemaType.STRING },
+   },
+   required: ['category', 'description'],
+};
+
+const imageOutfitSchema: Schema = {
+   type: SchemaType.OBJECT,
+   properties: {
+      top: { type: SchemaType.STRING },
+      bottom: { type: SchemaType.STRING },
+      onePiece: { type: SchemaType.STRING },
+      layers: { type: SchemaType.ARRAY, items: { type: SchemaType.STRING } },
+      shoes: { type: SchemaType.STRING },
+      bag: { type: SchemaType.STRING },
+      accessories: { type: SchemaType.ARRAY, items: outfitAccessorySchema },
+      paletteColors: { type: SchemaType.ARRAY, items: { type: SchemaType.STRING } },
+   },
+   required: ['top', 'bottom', 'onePiece', 'layers', 'shoes', 'bag', 'accessories', 'paletteColors'],
+};
+
 const analysisSchema: Schema = {
    type: SchemaType.OBJECT,
    properties: {
@@ -69,7 +93,7 @@ const analysisSchema: Schema = {
          required: ['foundations', 'koreanCushion', 'lipsticks', 'blushes', 'eyeshadowPalettes'],
       },
       similarCelebrities: { type: SchemaType.ARRAY, items: { type: SchemaType.STRING } },
-      imagePrompt: { type: SchemaType.STRING },
+      imageOutfit: imageOutfitSchema,
    },
    required: [
       'seasonalColorType',
@@ -79,7 +103,7 @@ const analysisSchema: Schema = {
       'hairColors',
       'makeup',
       'similarCelebrities',
-      'imagePrompt',
+      'imageOutfit',
    ],
 };
 
@@ -123,6 +147,21 @@ function requireArray(value: unknown, field: string, expectedLength: number): un
       throw new Error(`Gemini returned invalid ${field}; expected ${expectedLength} items`);
    }
    return value;
+}
+
+function requireArrayAtMost(value: unknown, field: string, maxLength: number): unknown[] {
+   if (!Array.isArray(value) || value.length > maxLength) {
+      throw new Error(`Gemini returned invalid ${field}; expected at most ${maxLength} items`);
+   }
+   return value;
+}
+
+function requireOptionalText(value: unknown, field: string): string {
+   if (typeof value !== 'string') {
+      throw new Error(`Gemini returned invalid ${field}`);
+   }
+   const text = value.trim();
+   return /^(?:none|n\/a|not applicable)$/i.test(text) ? '' : text;
 }
 
 function parseProducts(value: unknown, field: string, count: number): Product[] {
@@ -184,7 +223,82 @@ function formatAnalysis(value: unknown): string {
    const eyeshadowPalettes = parseProducts(makeup.eyeshadowPalettes, 'eyeshadowPalettes', 2);
    const celebrities = requireArray(analysis.similarCelebrities, 'similarCelebrities', 2)
       .map((name, index) => requireText(name, `similarCelebrities[${index}]`));
-   const imagePrompt = requireText(analysis.imagePrompt, 'imagePrompt').replace(/\s+/g, ' ');
+   const outfit = requireRecord(analysis.imageOutfit, 'imageOutfit');
+   const top = requireOptionalText(outfit.top, 'imageOutfit.top');
+   const bottom = requireOptionalText(outfit.bottom, 'imageOutfit.bottom');
+   const onePiece = requireOptionalText(outfit.onePiece, 'imageOutfit.onePiece');
+   if (onePiece ? top || bottom : !top || !bottom) {
+      throw new Error('Gemini must provide either a one-piece outfit or both a top and bottom');
+   }
+
+   const layers = requireArrayAtMost(outfit.layers, 'imageOutfit.layers', 2)
+      .map((layer, index) => requireText(layer, `imageOutfit.layers[${index}]`).replace(/\s+/g, ' '));
+   if (new Set(layers.map((layer) => layer.toLowerCase())).size !== layers.length) {
+      throw new Error('Gemini returned duplicate outfit layers');
+   }
+
+   const shoes = requireText(outfit.shoes, 'imageOutfit.shoes').replace(/\s+/g, ' ');
+   const bag = requireText(outfit.bag, 'imageOutfit.bag').replace(/\s+/g, ' ');
+   const allowedAccessoryCategories = new Set([
+      'hat', 'sunglasses', 'scarf', 'watch', 'necklace', 'earring',
+      'bracelet', 'belt', 'hair_accessory', 'brooch', 'glove', 'tie', 'pocket_square',
+   ]);
+   const accessoryLabels: Record<string, string> = {
+      hat: 'hat',
+      sunglasses: 'pair of sunglasses',
+      scarf: 'scarf',
+      watch: 'watch',
+      necklace: 'necklace',
+      earring: 'single earring',
+      bracelet: 'bracelet',
+      belt: 'belt',
+      hair_accessory: 'hair accessory',
+      brooch: 'brooch',
+      glove: 'single glove',
+      tie: 'tie',
+      pocket_square: 'pocket square',
+   };
+   const seenAccessories = new Set<string>();
+   const accessories = requireArrayAtMost(outfit.accessories, 'imageOutfit.accessories', 6)
+      .map((entry, index) => {
+         const accessory = requireRecord(entry, `imageOutfit.accessories[${index}]`);
+         const category = requireText(accessory.category, `imageOutfit.accessories[${index}].category`)
+            .toLowerCase().replace(/[\s-]+/g, '_');
+         if (!allowedAccessoryCategories.has(category) || seenAccessories.has(category)) {
+            throw new Error(`Gemini returned an invalid or duplicate accessory category: ${category}`);
+         }
+         seenAccessories.add(category);
+         return {
+            category,
+            label: accessoryLabels[category],
+            description: requireText(accessory.description, `imageOutfit.accessories[${index}].description`).replace(/\s+/g, ' '),
+         };
+      });
+
+   const selectedColorNames = requireArray(outfit.paletteColors, 'imageOutfit.paletteColors', 3)
+      .map((name, index) => requireText(name, `imageOutfit.paletteColors[${index}]`));
+   const paletteByName = new Map(seasonalPalette.map((color) => [color.name.toLowerCase(), color.name]));
+   if (new Set(selectedColorNames.map((name) => name.toLowerCase())).size !== 3 ||
+      selectedColorNames.some((name) => !paletteByName.has(name.toLowerCase()))) {
+      throw new Error('Gemini returned image colors outside the seasonal palette');
+   }
+
+   const centerOutfit = onePiece ? `one ${onePiece}` : `one ${top} with one ${bottom}`;
+   const centerLayers = layers.length ? `, layered with ${layers.join(' and ')}` : '';
+   const leftAccessories = accessories
+      .filter(({ category }) => ['hat', 'sunglasses', 'hair_accessory'].includes(category))
+      .map(({ label, description }) => `one ${label} (${description})`);
+   const rightAccessories = accessories
+      .filter(({ category }) => !['hat', 'sunglasses', 'hair_accessory'].includes(category))
+      .map(({ label, description }) => `one ${label} (${description})`);
+   const imagePrompt = [
+      'Create a polished square fashion catalog flat lay, photographed directly overhead on a plain white background.',
+      `Center column, largest visual group: ${centerOutfit}${centerLayers}.`,
+      `Left column: one matching pair of ${shoes}, exactly two individual shoes${leftAccessories.length ? `, and ${leftAccessories.join(', and ')}` : ''}.`,
+      `Right column: one ${bag}${rightAccessories.length ? `, and ${rightAccessories.join(', and ')}` : ''}.`,
+      `Use only these three palette colors: ${selectedColorNames.map((name) => paletteByName.get(name.toLowerCase())!).join(', ')}.`,
+      'Show every listed item once, fully visible, unworn, laid flat, neatly separated, and not overlapping. Add no unlisted objects or duplicate categories. No person, mannequin, body parts, props, text, logos, or shadows.',
+   ].join(' ');
 
    const csvCell = (cell: string) => cell.replace(/,/g, ' - ').replace(/[\r\n]/g, ' ').trim();
    const productRows = (products: Product[]) => products.map((product) =>
@@ -263,10 +377,10 @@ export async function analyzeFace(imageBase64: string, age?: string, style?: str
    - Provide exactly 2 foundations, 1 Korean cushion, 4 lipsticks, 2 blushes, and 2 eyeshadow palettes.
    - Each color must have a six-digit HEX value. Each product must include a purchasable product name, shade, six-digit HEX value, and HTTPS URL.
    - Provide exactly 2 celebrity names.
-   - The imagePrompt must describe an apparel-only, directly overhead flat lay on a plain white background, using only 3 colors from the seasonal palette.
-   - Specify this exact layout: center, one top plus either one pair of pants or one skirt, or one dress; left column, one hat, one pair of sunglasses, and one pair of shoes; right column, one scarf, one necklace, and one handbag.
-   - Keep the center clothing visually largest. Place each side item in its own clear space, fully visible and not overlapping. The clothes and accessories must be unworn and laid flat.
-   - Include no person, model, mannequin, body parts, face, hands, legs, silhouette, shadows, props, duplicate items, extra accessories, or HEX codes.
+   - imageOutfit must use either top and bottom with onePiece empty, or onePiece with top and bottom empty. Choose recognizable, age-appropriate pieces for a ${promptStyle} style.
+   - shoes must describe one matching pair, and bag must describe exactly one bag. layers may contain zero to two optional items such as a jacket, coat, or cardigan; include them only when they improve the outfit.
+   - accessories may contain zero to six optional single items. Add only accessories that improve this specific outfit, and never repeat a category. Allowed categories: hat, sunglasses, scarf, watch, necklace, single earring, bracelet, belt, hair_accessory, brooch, single glove, tie, pocket_square. Use an empty array when none are suitable.
+   - paletteColors must contain exactly three distinct color names copied from seasonalPalette. Return empty strings for whichever of top, bottom, or onePiece is unused, and empty arrays for optional items that are not suitable.
    `;
 
       const result = await model.generateContent([
