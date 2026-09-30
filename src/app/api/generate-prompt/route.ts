@@ -12,7 +12,7 @@ export async function POST(req: Request) {
     // 🧠 Step 1: Gemini analysis
     const result = await analyzeFace(imageBase64, age, style);
 
-    const hasSeasonalData = result.match(/\*\*Seasonal Color Type:\*\*/i);
+    const hasSeasonalData = /^\s*(?:#{1,6}\s*)?(?:\d+\.\s*)?\*{0,2}Seasonal Color Type\*{0,2}(?=\s|:|$)/im.test(result);
     if (!hasSeasonalData) {
       throw new Error(`Missing required color analysis sections. Gemini result: ${result}`);
     }

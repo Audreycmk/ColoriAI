@@ -1,6 +1,6 @@
 // src/lib/gemini.ts
 
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenerativeAI, SchemaType, type Schema } from "@google/generative-ai";
 
 // IMPORTANT: Use NEXT_PUBLIC_GEMINI_API_KEY in .env.local
 const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
@@ -12,13 +12,214 @@ if (!apiKey) {
 
 const genAI = new GoogleGenerativeAI(apiKey);
 
+const productSchema: Schema = {
+   type: SchemaType.OBJECT,
+   properties: {
+      brand: { type: SchemaType.STRING },
+      product: { type: SchemaType.STRING },
+      shade: { type: SchemaType.STRING },
+      hex: { type: SchemaType.STRING },
+      url: { type: SchemaType.STRING },
+   },
+   required: ['brand', 'product', 'shade', 'hex', 'url'],
+};
+
+const colorExtractionSchema: Schema = {
+   type: SchemaType.OBJECT,
+   properties: {
+      label: { type: SchemaType.STRING },
+      hex: { type: SchemaType.STRING },
+   },
+   required: ['label', 'hex'],
+};
+
+const paletteColorSchema: Schema = {
+   type: SchemaType.OBJECT,
+   properties: {
+      name: { type: SchemaType.STRING },
+      hex: { type: SchemaType.STRING },
+   },
+   required: ['name', 'hex'],
+};
+
+const analysisSchema: Schema = {
+   type: SchemaType.OBJECT,
+   properties: {
+      seasonalColorType: { type: SchemaType.STRING },
+      colorExtraction: { type: SchemaType.ARRAY, items: colorExtractionSchema },
+      seasonalPalette: { type: SchemaType.ARRAY, items: paletteColorSchema },
+      jewelryTone: {
+         type: SchemaType.OBJECT,
+         properties: {
+            name: { type: SchemaType.STRING },
+            hex: { type: SchemaType.STRING },
+         },
+         required: ['name', 'hex'],
+      },
+      hairColors: { type: SchemaType.ARRAY, items: paletteColorSchema },
+      makeup: {
+         type: SchemaType.OBJECT,
+         properties: {
+            foundations: { type: SchemaType.ARRAY, items: productSchema },
+            koreanCushion: productSchema,
+            lipsticks: { type: SchemaType.ARRAY, items: productSchema },
+            blushes: { type: SchemaType.ARRAY, items: productSchema },
+            eyeshadowPalettes: { type: SchemaType.ARRAY, items: productSchema },
+         },
+         required: ['foundations', 'koreanCushion', 'lipsticks', 'blushes', 'eyeshadowPalettes'],
+      },
+      similarCelebrities: { type: SchemaType.ARRAY, items: { type: SchemaType.STRING } },
+      imagePrompt: { type: SchemaType.STRING },
+   },
+   required: [
+      'seasonalColorType',
+      'colorExtraction',
+      'seasonalPalette',
+      'jewelryTone',
+      'hairColors',
+      'makeup',
+      'similarCelebrities',
+      'imagePrompt',
+   ],
+};
+
+type Product = {
+   brand: string;
+   product: string;
+   shade: string;
+   hex: string;
+   url: string;
+};
+
+function requireRecord(value: unknown, field: string): Record<string, unknown> {
+   if (typeof value !== 'object' || value === null || Array.isArray(value)) {
+      throw new Error(`Gemini returned invalid ${field}`);
+   }
+   return value as Record<string, unknown>;
+}
+
+function requireText(value: unknown, field: string): string {
+   if (typeof value !== 'string' || !value.trim()) {
+      throw new Error(`Gemini returned invalid ${field}`);
+   }
+   return value.trim();
+}
+
+function requireHex(value: unknown, field: string): string {
+   const hex = requireText(value, field);
+   if (!/^#[0-9a-f]{6}$/i.test(hex)) {
+      throw new Error(`Gemini returned invalid ${field}`);
+   }
+   return hex.toUpperCase();
+}
+
+function requireArray(value: unknown, field: string, expectedLength: number): unknown[] {
+   if (!Array.isArray(value) || value.length !== expectedLength) {
+      throw new Error(`Gemini returned invalid ${field}; expected ${expectedLength} items`);
+   }
+   return value;
+}
+
+function parseProducts(value: unknown, field: string, count: number): Product[] {
+   return requireArray(value, field, count).map((entry, index) => {
+      const product = requireRecord(entry, `${field}[${index}]`);
+      const url = requireText(product.url, `${field}[${index}].url`);
+      if (!URL.canParse(url) || new URL(url).protocol !== 'https:') {
+         throw new Error(`Gemini returned invalid ${field}[${index}].url`);
+      }
+      return {
+         brand: requireText(product.brand, `${field}[${index}].brand`),
+         product: requireText(product.product, `${field}[${index}].product`),
+         shade: requireText(product.shade, `${field}[${index}].shade`),
+         hex: requireHex(product.hex, `${field}[${index}].hex`),
+         url,
+      };
+   });
+}
+
+function formatAnalysis(value: unknown): string {
+   const analysis = requireRecord(value, 'analysis');
+   const season = requireText(analysis.seasonalColorType, 'seasonalColorType');
+   if (!/^(?:(?:Light|True|Warm|Soft|Deep|Cool|Bright|Clear|Muted|Dark)\s+)?(?:Spring|Summer|Autumn|Fall|Winter)(?:\s*\([^)]*\))?$/i.test(season)) {
+      throw new Error('Gemini returned an invalid seasonal color type');
+   }
+
+   const colorExtraction = requireArray(analysis.colorExtraction, 'colorExtraction', 3).map((entry, index) => {
+      const color = requireRecord(entry, `colorExtraction[${index}]`);
+      return {
+         label: requireText(color.label, `colorExtraction[${index}].label`),
+         hex: requireHex(color.hex, `colorExtraction[${index}].hex`),
+      };
+   });
+   if (colorExtraction.some((color, index) => color.label.toLowerCase() !== ['face', 'eye', 'hair'][index])) {
+      throw new Error('Gemini returned invalid colorExtraction labels');
+   }
+   const seasonalPalette = requireArray(analysis.seasonalPalette, 'seasonalPalette', 9).map((entry, index) => {
+      const color = requireRecord(entry, `seasonalPalette[${index}]`);
+      return {
+         name: requireText(color.name, `seasonalPalette[${index}].name`),
+         hex: requireHex(color.hex, `seasonalPalette[${index}].hex`),
+      };
+   });
+   const jewelryTone = requireRecord(analysis.jewelryTone, 'jewelryTone');
+   const jewelryName = requireText(jewelryTone.name, 'jewelryTone.name');
+   const jewelryHex = requireHex(jewelryTone.hex, 'jewelryTone.hex');
+   const hairColors = requireArray(analysis.hairColors, 'hairColors', 2).map((entry, index) => {
+      const color = requireRecord(entry, `hairColors[${index}]`);
+      return {
+         name: requireText(color.name, `hairColors[${index}].name`),
+         hex: requireHex(color.hex, `hairColors[${index}].hex`),
+      };
+   });
+   const makeup = requireRecord(analysis.makeup, 'makeup');
+   const foundations = parseProducts(makeup.foundations, 'foundations', 2);
+   const koreanCushion = parseProducts([makeup.koreanCushion], 'koreanCushion', 1)[0];
+   const lipsticks = parseProducts(makeup.lipsticks, 'lipsticks', 4);
+   const blushes = parseProducts(makeup.blushes, 'blushes', 2);
+   const eyeshadowPalettes = parseProducts(makeup.eyeshadowPalettes, 'eyeshadowPalettes', 2);
+   const celebrities = requireArray(analysis.similarCelebrities, 'similarCelebrities', 2)
+      .map((name, index) => requireText(name, `similarCelebrities[${index}]`));
+   const imagePrompt = requireText(analysis.imagePrompt, 'imagePrompt').replace(/\s+/g, ' ');
+
+   const csvCell = (cell: string) => cell.replace(/,/g, ' - ').replace(/[\r\n]/g, ' ').trim();
+   const productRows = (products: Product[]) => products.map((product) =>
+      [product.brand, product.product, product.shade, product.hex, product.url].map(csvCell).join(', ')
+   );
+   const colorRows = (colors: { name: string; hex: string }[]) =>
+      colors.map((color) => `${csvCell(color.name)}, ${color.hex}`);
+
+   return [
+      `1. **Seasonal Color Type**: ${season}`,
+      '2. **Color Extraction**\nLabel, HEX\n' + colorExtraction.map((color) => `${csvCell(color.label)}, ${color.hex}`).join('\n'),
+      '3. **9-Color Seasonal Palette**\nName, HEX\n' + colorRows(seasonalPalette).join('\n'),
+      `4. Jewelry Tone: ${csvCell(jewelryName)}, ${jewelryHex}`,
+      '5. **2 Flattering Hair Colors**\nName, HEX\n' + colorRows(hairColors).join('\n'),
+      [
+         '6. **Makeup Suggestions**',
+         'Foundations:\nBrand, Product, Shade, HEX, URL\n' + productRows(foundations).join('\n'),
+         'Korean Cushion:\nBrand, Product, Shade, HEX, URL\n' + productRows([koreanCushion]).join('\n'),
+         'Lipsticks:\nBrand, Product, Shade, HEX, URL\n' + productRows(lipsticks).join('\n'),
+         'Blushes:\nBrand, Product, Shade, HEX, URL\n' + productRows(blushes).join('\n'),
+         'Eyeshadow Palettes:\nBrand, Product, Shade, HEX, URL\n' + productRows(eyeshadowPalettes).join('\n'),
+      ].join('\n\n'),
+      '7. Similar Celebrities:\n' + celebrities.map((name) => `- ${csvCell(name)}`).join('\n'),
+      `8. Image Prompt: ${imagePrompt.replace(/:/g, ' -')}`,
+   ].join('\n\n');
+}
+
 /**
  * Analyze an uploaded image using Gemini 1.5 Flash model
  * Adds age and style to improve personalization
  */
 export async function analyzeFace(imageBase64: string, age?: string, style?: string) {
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+      const model = genAI.getGenerativeModel({
+         model: "gemini-3.5-flash-lite",
+         generationConfig: {
+            responseMimeType: 'application/json',
+            responseSchema: analysisSchema,
+         },
+      });
  
     // Parse base64 input and extract MIME type
     const parts = imageBase64.split(',');
@@ -52,44 +253,12 @@ export async function analyzeFace(imageBase64: string, age?: string, style?: str
    - Natural eye color
    - Natural hair color
 
-   Based on these features, analyze and provide the following in Markdown format:
-
-   1. **Seasonal Color Type** e.g. Soft Autumn
-
-   2. **Color Extraction** (CSV format):  
-      Label, HEX  
-      Example:  
-      Face, #EDC1A8  
-      Eye, #6A5554  
-      Hair, #3C3334
-
-   3. **9-Color Seasonal Palette** (CSV: Name, HEX)  
-      e.g. Dusty Rose, #C0A6A1
-
-   4. **Jewelry Tone** e.g. Gold, #D4AF37
-
-   5. **2 Flattering Hair Colors** (CSV: Name, HEX)
-
-   6. **Makeup Suggestions** - 2 Foundations (Brand, Product, Shade, HEX, URL)  
-      - 1 Korean Cushion
-      - 4 Lipsticks  
-      - 2 Blushes  
-      - 2 Eyeshadow Palettes  
-      Use only real, purchasable products. Provide HEX and URLs.
-
-   7. **2 Similar Celebrities** — name only (no images or descriptions)
-
-   8. **Image Prompt** Flat lay of A **${promptStyle}** outfit for a person age **${promptAge}** including exactly **5 items**:  
-   - 1 top  
-   - 1 bottom  
-   - 1 pair of shoes  
-   - 1 bag  
-   - 1 pair of glasses  
-
-   Use **only 3 colors** from the seasonal palette.  
-   No people, no shadows, no accessories, no hex code.  
-   Background must be clean and layout visible.  
-   Give a simple single sentence output, formatted for use in DALL·E 3.
+   Return JSON matching the response schema exactly. Do not include Markdown, code fences, or extra keys.
+   - Provide exactly 3 extracted colors (Face, Eye, Hair), 9 palette colors, and 2 hair colors.
+   - Provide exactly 2 foundations, 1 Korean cushion, 4 lipsticks, 2 blushes, and 2 eyeshadow palettes.
+   - Each color must have a six-digit HEX value. Each product must include a purchasable product name, shade, six-digit HEX value, and HTTPS URL.
+   - Provide exactly 2 celebrity names.
+   - The imagePrompt must be one sentence describing a ${promptStyle} outfit for age ${promptAge}, with exactly 5 items: one top, one bottom, one pair of shoes, one bag, and one pair of glasses. Use only 3 colors from the seasonal palette. Do not include a person, shadows, additional accessories, or HEX codes.
    `;
 
       const result = await model.generateContent([
@@ -100,7 +269,7 @@ export async function analyzeFace(imageBase64: string, age?: string, style?: str
       const response = await result.response;
       const textResult = await response.text();
       console.log("lib/gemini.ts: Gemini response received. Text length:", textResult.length);
-      return textResult;
+      return formatAnalysis(JSON.parse(textResult));
 
    } catch (error: unknown) {
       console.error('Error analyzing image:', error);

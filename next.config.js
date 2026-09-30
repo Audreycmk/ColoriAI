@@ -3,6 +3,9 @@ const nextConfig = {
   // Force Vercel to rebuild from latest commit with Link import fix
   experimental: {
     // Enable experimental features if needed
+    serverActions: {
+      allowedOrigins: ['didactic-space-train-pjprqpjg594rf696w-3000.app.github.dev'],
+    },
   },
   images: {
     remotePatterns: [

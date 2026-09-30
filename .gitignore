@@ -56,3 +56,8 @@ public/uploads/
 *.jpg
 *.png
 *.pdf
+
+# clerk configuration (can include secrets)
+/.clerk/
+.vercel
+.env*

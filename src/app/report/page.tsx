@@ -126,9 +126,11 @@ export default function ReportPage() {
           const lines = section.split('\n').map(line => line.trim());
           
           // Seasonal Color Type
-          if (lines[0].includes('Seasonal Color Type:')) {
-            const type = lines[0].split(':')[1].trim();
-            data.seasonType = type.replace(/\*\*/g, '').trim();
+          const seasonType =
+            lines[0].match(/Seasonal Color Type\*{0,2}\s*:\s*(.+)$/i)?.[1] ??
+            lines[0].match(/Seasonal Color Type:\*{0,2}\s*(.+)$/i)?.[1];
+          if (seasonType) {
+            data.seasonType = seasonType.replace(/\*\*/g, '').trim();
           }
           
           // Color Extraction
@@ -307,7 +309,7 @@ export default function ReportPage() {
           
           // Image Prompt
           else if (lines[0].includes('Image Prompt:')) {
-            let prompt = lines[0].split(':')[1].trim();
+            let prompt = lines[0].match(/Image Prompt:\s*(.*)$/i)?.[1]?.trim() || '';
             
             // Clean up the prompt to show only the outfit items
             // Remove common prefixes like "Flatlay of...", "A formal outfit for...", etc.
@@ -329,7 +331,7 @@ export default function ReportPage() {
             
             // If the prompt is empty or just whitespace after cleaning, use the original
             if (!prompt || prompt.trim() === '') {
-              prompt = lines[0].split(':')[1].trim();
+              prompt = lines[0].match(/Image Prompt:\s*(.*)$/i)?.[1]?.trim() || '';
             }
             
             data.outfit.imagePrompt = prompt;

@@ -60,8 +60,10 @@ export default function LoadingPage() {
         let generatedImageUrl = '';
         
         // Extract image prompt and generate outfit image
-        const match = cleanedResult.match(/\*\*Image Prompt:\*\*\s*(.+)/);
-        let imagePrompt = match?.[1]?.trim();
+        const match = cleanedResult.match(/^\s*(?:#{1,6}\s*)?(?:\d+\.\s*)?\*{0,2}Image Prompt\*{0,2}:?[ \t]*(.*)$/im);
+        let imagePrompt = match?.[1]?.trim() || (match
+          ? cleanedResult.slice((match.index ?? 0) + match[0].length).trim().split(/\r?\n/, 1)[0]
+          : undefined);
 
         // Clean up the prompt to show only the outfit items
         if (imagePrompt) {
@@ -182,9 +184,11 @@ export default function LoadingPage() {
       const lines = section.split('\n').map(line => line.trim());
       
       // Seasonal Color Type
-      if (lines[0].includes('Seasonal Color Type:')) {
-        const type = lines[0].split(':')[1].trim();
-        data.seasonType = type.replace(/\*\*/g, '').trim();
+      const seasonType =
+        lines[0].match(/Seasonal Color Type\*{0,2}\s*:\s*(.+)$/i)?.[1] ??
+        lines[0].match(/Seasonal Color Type:\*{0,2}\s*(.+)$/i)?.[1];
+      if (seasonType) {
+        data.seasonType = seasonType.replace(/\*\*/g, '').trim();
       }
       
       // Color Extraction
