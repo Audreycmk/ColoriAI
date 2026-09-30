@@ -106,11 +106,16 @@ function requireText(value: unknown, field: string): string {
 }
 
 function requireHex(value: unknown, field: string): string {
-   const hex = requireText(value, field);
-   if (!/^#[0-9a-f]{6}$/i.test(hex)) {
-      throw new Error(`Gemini returned invalid ${field}`);
+   const rawHex = requireText(value, field);
+   const match = rawHex.match(/^(?:#|0x)?([0-9a-f]{3}|[0-9a-f]{6})$/i);
+   if (!match) {
+      throw new Error(`Gemini returned invalid ${field}: ${JSON.stringify(rawHex.slice(0, 32))}`);
    }
-   return hex.toUpperCase();
+
+   const digits = match[1].length === 3
+      ? [...match[1]].map((digit) => digit + digit).join('')
+      : match[1];
+   return `#${digits.toUpperCase()}`;
 }
 
 function requireArray(value: unknown, field: string, expectedLength: number): unknown[] {
